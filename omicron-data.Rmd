@@ -61,19 +61,17 @@ DT.labrador = DT()
 
 On this website we:
 
-- visualize COVID-19 cases reported by [Newfoundland and Labrador (NL)](https://www.gov.nl.ca/releases/covid-19-news/)
+- visualize COVID-19 cases reported by [Newfoundland and Labrador (NL)](https://www.gov.nl.ca/releases/covid-19-news/);
 
 - estimate the doubling time of reported cases; and
 
 - predict hospitalizations and deaths.
 
-The data begins on December 15, 2021 when the first Omicron case was reported in NL.
+The data begins on December 15, 2021, when the [first Omicron case](http://ntv.ca/province-confirms-first-case-of-omicron-variant-introduces-new-public-health-measures/) was reported in NL.
 
 </div>
 
 ## Reported cases
-
-Our presentation of these data by region suggests substantial infection spread within health regions, but limited spread between regions.
 
 ```{r, echo=FALSE, warning = FALSE}
 g1=ggplot(data3, aes(x=date, y=cases, group = RHA)) +
@@ -98,13 +96,16 @@ theme_classic()+
 g
 ```
 
-**Figure 1.** [Eligibility for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) in NL changed on January 3rd, 2022.
+**Figure 1.** 
 
 ```{r,echo=F}
 g1
 ```
 
-**Figure 2.** Per 100,000 people Labrador-Grenfell Regional Health Authority has the highest number of reported cases.
+**Figure 2.** 
+
+Our presentation of these data by health region suggests infection spread within health regions, but limited spread between regions. [Eligibility for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) changed in NL on January 3rd, 2022.
+
 
 ## Doubling times
 
@@ -128,8 +129,8 @@ d = 3
 UK.rate = (data$EH+data$LG+data$CH+data$WH)/791 - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/791,-d))
 ON.rate = (data$EH+data$LG+data$CH+data$WH)/301 - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/301,-d))
 
-UK.rate.ad = (data$EH+data$LG+data$CH+data$WH)/791
-ON.rate.ad = (data$EH+data$LG+data$CH+data$WH)/301
+UK.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/791
+ON.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/301
 
 # 649834/57 - 5 days median time to death.
 UK.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/11401
@@ -182,29 +183,27 @@ theme_classic()+
 
 ## Hospitalizations and deaths
 
-We consider data from the [United Kingdom (UK)](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1044481/Technical-Briefing-31-Dec-2021-Omicron_severity_update.pdf) and [Ontario (ON)](https://www.publichealthontario.ca/-/media/documents/ncov/epi/covid-19-epi-enhanced-estimates-omicron-severity-study.pdf?sc_lang=en) to understand the relationship between reported Omicron cases and the future number of hospitalizations and deaths.
+We consider data from [United Kingdom Health Security Agency  (UKHSA)](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1044481/Technical-Briefing-31-Dec-2021-Omicron_severity_update.pdf) and [Public Health Ontario (PHO)](https://www.publichealthontario.ca/-/media/documents/ncov/epi/covid-19-epi-enhanced-estimates-omicron-severity-study.pdf?sc_lang=en) reports to understand the relationship between reported Omicron cases, and the future number of hospitalizations and deaths.
 
-The UK study reports for Omicron 649,834 cases, 815 hospital admissions, and 57 deaths up until December 29, 2021. The ON study reports for Omicron 6,312 cases, 21 hospitalizations, and 0 deaths from November 22 - December 17, 2021. We assume: (1) hospitalizations are lagged 7 days from cases; (2) the time from being reported as a case to death is 5 days, which is the median time reported in the UK study; and (3) the length of stay in the hospital is 3 days ([Maslo et al. 2021](https://jamanetwork.com/journals/jama/fullarticle/2787776)).
+The UKHSA study reports for Omicron: 649,834 cases, 815 hospital admissions, and 57 deaths up until December 29, 2021. The PHO study reports for Omicron: 6,312 cases, 21 hospitalizations, and 0 deaths from November 22 - December 17, 2021. These studies were selected as the populations of the United Kingdom and Ontario have more similar age-structure to NL than South Africa, where relevant studies have been completed, but are not considered.
 
 ```{r, echo=FALSE,warning=FALSE}
 g2
 ```
 
-**Figure 3.** The reported proportion of hospitalizations for Omicron cases in the UK and ON studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected hospital occupancy. The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). 
+**Figure 3.** The reported proportion of hospitalizations for Omicron cases in the UKHSA and PHO studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected hospital occupancy. In addition, we assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 3 days ([Maslo et al. 2021](https://jamanetwork.com/journals/jama/fullarticle/2787776)). The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). 
 
 ```{r, echo=FALSE,warning=FALSE}
 g2b
 ```
 
-**Figure 4.** The reported proportion of hospitalizations for Omicron cases in the UK and ON studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected cumulative number of hospitalizations since December 15th, 2021 in NL. The NL Public Advisories do not report the number of new admissions or discharges so these predictions cannot be evaluated using the publicly available information.
+**Figure 4.** The reported proportion of hospitalizations for Omicron cases in the UKHSA and PHO studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected cumulative number of hospitalizations since December 15th, 2021 in NL. In addition, we assume hospitalizations are lagged 7 days from cases. The NL Public Advisories do not report the number of new admissions or discharges, so these predictions of the cumulative number of hospitalizations cannot be evaluated using the publicly available information. The range of cumulative hospitalization is [`r round(UK.rate.ad[(L-7)],2)`, `r round(ON.rate.ad[(L-7)],2)`] on `r as.Date(days2[(L-7)], format = "%d %b")` and [`r round(UK.rate.ad[L],2)`, `r round(ON.rate.ad[L],2)`] on `r as.Date(days2[L], format= "%d %b")`.
 
 
 ```{r, echo=FALSE,warning=FALSE}
 g3
 ```
 
-**Figure 5.** The reported proportion of deaths for Omicron cases in the ON and UK studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected deaths since December 15, 2021. The black dots and lines are the number of deaths as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). 
-
-
+**Figure 5.** The reported proportion of deaths for Omicron cases in the PHO and UKHSA studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected deaths since December 15, 2021. We assume the time from being reported as a case to death is 5 days, which is the median time from specimen to death in the UKHSA study. The black dots and lines are the number of deaths as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). 
 
 
