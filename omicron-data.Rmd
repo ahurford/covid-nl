@@ -1,6 +1,6 @@
 ---
 title: "COVID-19 in Newfoundland and Labrador"
-author: "Amy Hurford, Francis Anokye, and Zahra Mohammadi"
+author: "Amy Hurford, Zahra Mohammadi, and Francis Anokye"
 output:
   html_document: default
   word_document: default
@@ -15,6 +15,7 @@ fontsize: 11pt
 
 ```{r setup, include=FALSE}
 require(ggplot2)
+require(patchwork)
 data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL.csv', fill=TRUE)
 # Fix problems with non-reporting days manually
 data[1,2:7] = data[1,2:7]/2
@@ -58,21 +59,23 @@ DT.labrador = DT()
 
 <div class="alert alert-info">
 
-This website visualizes:
+On this website we:
 
-- Regional COVID-19 cases reported by [Newfoundland and Labrador (NL)](https://www.gov.nl.ca/releases/covid-19-news/),
+- visualize COVID-19 cases reported by [Newfoundland and Labrador (NL)](https://www.gov.nl.ca/releases/covid-19-news/)
 
-- Regional COVID-19 cases per 100,000 people in a NL Regional Health Authority,
+- estimate the doubling time of reported cases; and
 
-and reports:
+- predict hospitalizations and deaths.
 
-- the doubling time of reported cases.
-
-The data begins on December 15, 2021 when the first Omicron case was reported in NL. Our presentation of these data by region suggests substantial infection spread within health regions, but limited spread between regions.
+The data begins on December 15, 2021 when the first Omicron case was reported in NL.
 
 </div>
 
-```{r, echo=FALSE}
+## Reported cases
+
+Our presentation of these data by region suggests substantial infection spread within health regions, but limited spread between regions.
+
+```{r, echo=FALSE, warning = FALSE}
 g1=ggplot(data3, aes(x=date, y=cases, group = RHA)) +
 geom_line(aes(color=RHA))+
 geom_point(aes(color=RHA))+
@@ -95,7 +98,15 @@ theme_classic()+
 g
 ```
 
-**Doubling times**
+**Figure 1.** [Eligibility for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) in NL changed on January 3rd, 2022.
+
+```{r,echo=F}
+g1
+```
+
+**Figure 2.** Per 100,000 people Labrador-Grenfell Regional Health Authority has the highest number of reported cases.
+
+## Doubling times
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). Our doubling time calculations consider the number of reported cases over the last `r T` days with 95% confidence intervals in parenthesis.
 
@@ -109,20 +120,34 @@ Labrador-Grenfell Health: `r DT.labrador[1]` days [`r DT.labrador[3]`, `r DT.lab
 
 When no upper limit appears for the 95% confidence interval this is because exponential decay is implied. Fitting is performed using nonlinear least squares.
 
-```{r,echo=F}
-g1
-```
-```{r, include=F}
-UK.rate = cumsum(data$EH+data$LG+data$CH+data$WH)/648
-ON.rate = cumsum(data$EH+data$LG+data$CH+data$WH)/301
+```{r, include=F, warning=FALSE}
+# 649834/815
+# Assume 3 days hospitalized. Admissions - discharges
+# Hospitalized within 14 days of specimen, take 7 as mean.
+d = 3
+UK.rate = (data$EH+data$LG+data$CH+data$WH)/791 - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/791,-d))
+ON.rate = (data$EH+data$LG+data$CH+data$WH)/301 - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/301,-d))
+
+UK.rate.ad = (data$EH+data$LG+data$CH+data$WH)/791
+ON.rate.ad = (data$EH+data$LG+data$CH+data$WH)/301
+
+# 649834/57 - 5 days median time to death.
+UK.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/11401
+ON.rate.m = rep(0,L)
 future.dates = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 8, by = "days"),-1)
 days2 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-7),future.dates)
+future.dates.5 = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 6, by = "days"),-1)
+days3 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-5),future.dates.5)
 NL.hosp = c(tail(NL.data$cum.hospital,-7), rep(NA,7))
+NL.mort = c(tail(NL.data$cum.mort,-5), rep(NA,5))
 data2 = data.frame(dates = days2, ON = ON.rate, UK = UK.rate)
+data3 = data.frame(dates = days3, ON = ON.rate.m, UK = UK.rate.m)
+data4 = data.frame(dates = days2, UK = UK.rate.ad, ON = ON.rate.ad)
 pointdata = data.frame(days2 = days2, hospital = NL.hosp)
+pointdata2 = data.frame(days2 = days3, mortality = NL.mort)
 ```
 
-```{r, echo=FALSE}
+```{r, include=FALSE, warning=FALSE}
 g2=ggplot()+
 geom_ribbon(data=data2, aes(x=as.Date(dates), ymin=UK, ymax=ON), fill = "grey70")+
   geom_point(data = pointdata, aes(x = days2, y = hospital))+
@@ -130,9 +155,56 @@ geom_ribbon(data=data2, aes(x=as.Date(dates), ymin=UK, ymax=ON), fill = "grey70"
   xlab("")+
   ylab("")+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
-  ggtitle("Projected cumulative hospitalizations since Dec 15, 2021")+
+  ggtitle("Projected hospital occupancy")+
 theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+
+g2b=ggplot()+
+geom_ribbon(data=data4, aes(x=as.Date(dates), ymin=UK, ymax=ON), fill = "grey70")+
+  xlab("")+
+  ylab("")+
+  scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  ggtitle("Cumulative hospitalizations since Dec 15, 2021")+
+theme_classic()+
+  theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+
+g3=ggplot()+
+geom_ribbon(data=data3, aes(x=as.Date(dates), ymin=ON, ymax=UK), fill = "grey70")+
+  geom_point(data = pointdata2, aes(x = days2, y = mortality))+
+  geom_line(data = pointdata2, aes(x = days2, y = mortality))+
+  xlab("")+
+  ylab("")+
+  scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  ggtitle("Projected cumulative mortality since Dec 15, 2021")+
+theme_classic()+
+  theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+```
+
+## Hospitalizations and deaths
+
+We consider data from the [United Kingdom (UK)](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1044481/Technical-Briefing-31-Dec-2021-Omicron_severity_update.pdf) and [Ontario (ON)](https://www.publichealthontario.ca/-/media/documents/ncov/epi/covid-19-epi-enhanced-estimates-omicron-severity-study.pdf?sc_lang=en) to understand the relationship between reported Omicron cases and the future number of hospitalizations and deaths.
+
+The UK study reports for Omicron 649,834 cases, 815 hospital admissions, and 57 deaths up until December 29, 2021. The ON study reports for Omicron 6,312 cases, 21 hospitalizations, and 0 deaths from November 22 - December 17, 2021. We assume: (1) hospitalizations are lagged 7 days from cases; (2) the time from being reported as a case to death is 5 days, which is the median time reported in the UK study; and (3) the length of stay in the hospital is 3 days ([Maslo et al. 2021](https://jamanetwork.com/journals/jama/fullarticle/2787776)).
+
+```{r, echo=FALSE,warning=FALSE}
 g2
 ```
+
+**Figure 3.** The reported proportion of hospitalizations for Omicron cases in the UK and ON studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected hospital occupancy. The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). 
+
+```{r, echo=FALSE,warning=FALSE}
+g2b
+```
+
+**Figure 4.** The reported proportion of hospitalizations for Omicron cases in the UK and ON studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected cumulative number of hospitalizations since December 15th, 2021 in NL. The NL Public Advisories do not report the number of new admissions or discharges so these predictions cannot be evaluated using the publicly available information.
+
+
+```{r, echo=FALSE,warning=FALSE}
+g3
+```
+
+**Figure 5.** The reported proportion of deaths for Omicron cases in the ON and UK studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected deaths since December 15, 2021. The black dots and lines are the number of deaths as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). 
+
+
+
 
