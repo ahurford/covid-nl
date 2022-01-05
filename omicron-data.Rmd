@@ -1,6 +1,6 @@
 ---
 title: "COVID-19 in Newfoundland and Labrador"
-author: "Amy Hurford and Zahra Mohammadi"
+author: "Amy Hurford, Francis Anokye, and Zahra Mohammadi"
 output:
   html_document: default
   word_document: default
@@ -32,6 +32,7 @@ new1[1,2:8] = data[11,2:8]
 new2 = new1
 new2[1,1] = "2021-12-26"
 data = rbind(data[1:10,],new1, new2,data[11:L,])
+NL.data = data
 L = length(data[,1])
 data2 = data.frame(date = rep(data$date,4), cases = c(data$EH, data$CH, data$WH, data$LG), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
 data3 = data.frame(date = rep(data$date,4), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
@@ -110,5 +111,28 @@ When no upper limit appears for the 95% confidence interval this is because expo
 
 ```{r,echo=F}
 g1
+```
+```{r, include=F}
+UK.rate = cumsum(data$EH+data$LG+data$CH+data$WH)/648
+ON.rate = cumsum(data$EH+data$LG+data$CH+data$WH)/301
+future.dates = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 8, by = "days"),-1)
+days2 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-7),future.dates)
+NL.hosp = c(tail(NL.data$cum.hospital,-7), rep(NA,7))
+data2 = data.frame(dates = days2, ON = ON.rate, UK = UK.rate)
+pointdata = data.frame(days2 = days2, hospital = NL.hosp)
+```
+
+```{r, echo=FALSE}
+g2=ggplot()+
+geom_ribbon(data=data2, aes(x=as.Date(dates), ymin=UK, ymax=ON), fill = "grey70")+
+  geom_point(data = pointdata, aes(x = days2, y = hospital))+
+  geom_line(data = pointdata, aes(x = days2, y = hospital))+
+  xlab("")+
+  ylab("")+
+  scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  ggtitle("Projected cumulative hospitalizations since Dec 15, 2021")+
+theme_classic()+
+  theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+g2
 ```
 
