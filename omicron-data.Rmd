@@ -156,7 +156,7 @@ geom_ribbon(data=data2, aes(x=as.Date(dates), ymin=ON, ymax=UK), fill = "grey70"
   xlab("")+
   ylab("")+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
-  ggtitle("Projected hospital occupancy")+
+  ggtitle("Projected and actual hospital occupancy")+
 theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
 
@@ -176,7 +176,7 @@ geom_ribbon(data=data3, aes(x=as.Date(dates), ymin=ON, ymax=UK), fill = "grey70"
   xlab("")+
   ylab("")+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
-  ggtitle("Projected cumulative deaths since December 15, 2021")+
+  ggtitle("Projected and actual cumulative deaths since December 15, 2021")+
 theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
 ```
