@@ -122,19 +122,19 @@ Labrador-Grenfell Health: `r DT.labrador[1]` days [`r DT.labrador[3]`, `r DT.lab
 When no upper limit appears for the 95% confidence interval this is because exponential decay is implied. Fitting is performed using nonlinear least squares.
 
 ```{r, include=F, warning=FALSE}
-# 649834/815
+ 
 # Assume 3 days hospitalized. Admissions - discharges
 # Hospitalized within 14 days of specimen, take 7 as mean.
 d = 3
-UK.rate = (data$EH+data$LG+data$CH+data$WH)/791 - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/791,-d))
-ON.rate = (data$EH+data$LG+data$CH+data$WH)/301 - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/301,-d))
+UK.rate = (data$EH+data$LG+data$CH+data$WH)/(198348/815) - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/(198348/815),-d))
+ON.rate = (data$EH+data$LG+data$CH+data$WH)/(29594/75) - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/(29594/75),-d))
 
-UK.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/791
-ON.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/301
+UK.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/(198348/815)
+ON.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/(29594/75)
 
 # 649834/57 - 5 days median time to death.
-UK.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/11401
-ON.rate.m = rep(0,L)
+UK.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/(198348/57)
+ON.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/(29594/3)
 future.dates = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 8, by = "days"),-1)
 days2 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-7),future.dates)
 future.dates.5 = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 6, by = "days"),-1)
@@ -150,7 +150,7 @@ pointdata2 = data.frame(days2 = days3, mortality = NL.mort)
 
 ```{r, include=FALSE, warning=FALSE}
 g2=ggplot()+
-geom_ribbon(data=data2, aes(x=as.Date(dates), ymin=UK, ymax=ON), fill = "grey70")+
+geom_ribbon(data=data2, aes(x=as.Date(dates), ymin=ON, ymax=UK), fill = "grey70")+
   geom_point(data = pointdata, aes(x = days2, y = hospital))+
   geom_line(data = pointdata, aes(x = days2, y = hospital))+
   xlab("")+
@@ -185,7 +185,7 @@ theme_classic()+
 
 We consider data from [United Kingdom Health Security Agency  (UKHSA)](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1044481/Technical-Briefing-31-Dec-2021-Omicron_severity_update.pdf) and [Public Health Ontario (PHO)](https://www.publichealthontario.ca/-/media/documents/ncov/epi/covid-19-epi-enhanced-estimates-omicron-severity-study.pdf?sc_lang=en) reports to understand the relationship between reported Omicron cases, and the future number of hospitalizations and deaths.
 
-The UKHSA study reports for Omicron: 649,834 cases, 815 hospital admissions, and 57 deaths up until December 29, 2021. The PHO study reports for Omicron: 6,312 cases, 21 hospitalizations, and 0 deaths from November 22 - December 17, 2021. These studies were selected as the populations of the United Kingdom and Ontario have more similar age-structure to NL than South Africa, where relevant studies have been completed, but are not considered.
+The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital admissions (0.41%), and 57 deaths (0.03%) up until December 29, 2021. The PHO study reports for Omicron: 29,594 cases, 75 hospitalizations or deaths (0.25%), and 3 deaths (0.01%) from November 22 - December 17, 2021. These studies were selected as the populations of the United Kingdom and Ontario have more similar age-structure to NL than South Africa, where relevant studies have been completed, but are not considered.
 
 ```{r, echo=FALSE,warning=FALSE}
 g2
@@ -197,7 +197,7 @@ g2
 g2b
 ```
 
-**Figure 4.** The reported proportion of hospitalizations for Omicron cases in the UKHSA and PHO studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected cumulative number of hospitalizations since December 15th, 2021 in NL. In addition, we assume hospitalizations are lagged 7 days from cases. The NL Public Advisories do not report the number of new admissions or discharges, so these predictions of the cumulative number of hospitalizations cannot be evaluated using the publicly available information. The range of cumulative hospitalization is [`r round(UK.rate.ad[(L-7)],2)`, `r round(ON.rate.ad[(L-7)],2)`] on `r as.Date(days2[(L-7)], format = "%d %b")` and [`r round(UK.rate.ad[L],2)`, `r round(ON.rate.ad[L],2)`] on `r as.Date(days2[L], format= "%d %b")`.
+**Figure 4.** The reported proportion of hospitalizations for Omicron cases in the PHO and UKHSA studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected cumulative number of hospitalizations since December 15th, 2021 in NL. In addition, we assume hospitalizations are lagged 7 days from cases. The NL Public Advisories do not report the number of new admissions or discharges, so these predictions of the cumulative number of hospitalizations cannot be evaluated using the publicly available information. The range of cumulative hospitalization is [`r round(UK.rate.ad[(L-7)],2)`, `r round(ON.rate.ad[(L-7)],2)`] on `r as.Date(days2[(L-7)], format = "%d %b")` and [`r round(UK.rate.ad[L],2)`, `r round(ON.rate.ad[L],2)`] on `r as.Date(days2[L], format= "%d %b")`.
 
 
 ```{r, echo=FALSE,warning=FALSE}
