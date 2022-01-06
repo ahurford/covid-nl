@@ -197,7 +197,7 @@ g2
 g2b
 ```
 
-**Figure 4.** The reported proportion of hospitalizations for Omicron cases in the PHO and UKHSA studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected cumulative number of hospitalizations since December 15th, 2021 in NL. In addition, we assume hospitalizations are lagged 7 days from cases. The NL Public Advisories do not report the number of new admissions or discharges, so these predictions of the cumulative number of hospitalizations cannot be evaluated using the publicly available information. The range of cumulative hospitalization is [`r round(UK.rate.ad[(L-7)],2)`, `r round(ON.rate.ad[(L-7)],2)`] on `r as.Date(days2[(L-7)], format = "%d %b")` and [`r round(UK.rate.ad[L],2)`, `r round(ON.rate.ad[L],2)`] on `r as.Date(days2[L], format= "%d %b")`.
+**Figure 4.** The reported proportion of hospitalizations for Omicron cases in the PHO and UKHSA studies are parameters that determine the lower and upper bounds of the grey shaded regions for projected cumulative number of hospitalizations since December 15th, 2021 in NL. In addition, we assume hospitalizations are lagged 7 days from cases. The NL Public Advisories do not report the number of new admissions or discharges, so these predictions of the cumulative number of hospitalizations cannot be evaluated using the publicly available information. The range of cumulative hospitalization is [`r round(ON.rate.ad[(L-7)],2)`, `r round(UK.rate.ad[(L-7)],2)`] on `r as.Date(days2[(L-7)], format = "%d %b")` and [`r round(ON.rate.ad[L],2)`, `r round(UK.rate.ad[L],2)`] on `r as.Date(days2[L], format= "%d %b")`.
 
 
 ```{r, echo=FALSE,warning=FALSE}
