@@ -40,21 +40,23 @@ data3 = data.frame(date = rep(data$date,4), cases = 100000*c(data$EH/317664, dat
 T<-10
 DT = function(){
 mod = nls(val ~ a*exp(r*seq(1,T)), 
-               start = list(a = 1, r = 0.2))
-CI = confint(mod, level=0.95)
-CI.lower = max(CI[2,1],0)
-CI.upper = CI[2,2]
+               start = list(a = 100, r = 0.2))
+#CI = confint(mod, level=0.95)
+#CI.lower = max(CI[2,1],0)
+#CI.upper = CI[2,2]
 lambda = unname(coef(mod)[2])
-DT = c(round(log(2)/lambda,2), round(log(2)/CI.lower,2), round(log(2)/CI.upper,2))
+DT = c(round(log(2)/lambda,2), NA, NA)
 }
 val <- tail(data$EH,T)
 DT.eastern = DT()
-val <- tail(log(data$CH),T)
+val <- tail(data$CH,T)
 DT.central = DT()
-val <- tail(log(data$WH),T)
+val <- tail(data$WH,T)
 DT.western = DT()
-val <- tail(log(data$LG),T)
+val <- tail(data$LG,T)
 DT.labrador = DT()
+val <- tail(data$LG+data$EH+data$CH+data$WH,T)
+DT.NL = DT()
 ```
 
 <div class="alert alert-info">
@@ -70,6 +72,12 @@ On this website we:
 The data begins on December 15, 2021, when the [first Omicron case](http://ntv.ca/province-confirms-first-case-of-omicron-variant-introduces-new-public-health-measures/) was reported in NL.
 
 </div>
+
+## Testing
+
+[Eligibility for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) changed in NL on January 3rd, 2022, such that anyone that is a close contact of a case and has symptoms of COVID-19, should consider themselves a positive case. In British Columbia (BC), people under 65 are discouraged from seeking PCR testing. The [BC Modelling Group](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf) estimates that the number of cases reported in BC would be 3.6 times higher without this change in testing.
+
+Comparisons, graphs, and analysis of reported cases in NL before and after January 3rd, 2022, should be treated with caution as it is not known how much the changes in PCR testing have resulted in under-counting of COVID-19 cases after January 3rd.
 
 ## Reported cases
 
@@ -104,22 +112,21 @@ g1
 
 **Figure 2.** 
 
-Our presentation of these data by health region suggests infection spread within health regions, but limited spread between regions. [Eligibility for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) changed in NL on January 3rd, 2022.
-
-
 ## Doubling times
 
-The doubling time is the days until the number of reported cases doubles (assuming exponential growth). Our doubling time calculations consider the number of reported cases over the last `r T` days with 95% confidence intervals in parenthesis.
+The doubling time is the days until the number of reported cases doubles (assuming exponential growth). Our doubling time calculations consider the number of reported cases over the last `r T` days.
 
-Eastern Health: `r DT.eastern[1]` days [`r DT.eastern[3]`, `r DT.eastern[2]`]
+**Newfoundland and Labrador: `r DT.NL[1]` days**
 
-Central Health: `r DT.central[1]` days [`r DT.central[3]`, `r DT.central[2]`]
+**Eastern Health: `r DT.eastern[1]` days** 
 
-Western Health: `r DT.western[1]` days [`r DT.western[3]`, `r DT.western[2]`]
+**Central Health: `r DT.central[1]` days** 
 
-Labrador-Grenfell Health: `r DT.labrador[1]` days [`r DT.labrador[3]`, `r DT.labrador[2]`] 
+**Western Health: `r DT.western[1]` days** 
 
-When no upper limit appears for the 95% confidence interval this is because exponential decay is implied. Fitting is performed using nonlinear least squares.
+**Labrador-Grenfell Health: `r DT.labrador[1]` days** 
+
+Fitting is performed using nonlinear least squares and do not account for the changes in PCR testing announced on [January 3](https://www.gov.nl.ca/releases/2022/health/0103n02/).
 
 ```{r, include=F, warning=FALSE}
  
@@ -130,11 +137,17 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = .15*ONh
+NLh = 1.35*UKh
 NLm = .1*ONm
-UK.rate = (data$EH+data$LG+data$CH+data$WH)/UKh - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/UKh,-d))
-ON.rate = (data$EH+data$LG+data$CH+data$WH)/ONh - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/ONh,-d))
-NL.rate = (data$EH+data$LG+data$CH+data$WH)/NLh - c(rep(0,d),head((data$EH+data$LG+data$CH+data$WH)/NLh,-d))
+UK.rate = (data$EH+data$LG+data$CH+data$WH)/UKh
+UK.rate = cumsum(UK.rate)
+UK.rate[7:L] = UK.rate[7:L] - UK.rate[1:(L-6)]
+ON.rate = (data$EH+data$LG+data$CH+data$WH)/ONh
+ON.rate = cumsum(ON.rate)
+ON.rate[7:L] = ON.rate[7:L] - ON.rate[1:(L-6)]
+NL.rate = (data$EH+data$LG+data$CH+data$WH)/NLh 
+NL.rate = cumsum(NL.rate)
+NL.rate[7:L] = NL.rate[7:L] - NL.rate[1:(L-6)]
 
 UK.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/UKh
 ON.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/ONh
@@ -194,13 +207,13 @@ theme_classic()+
 
 We consider data from [United Kingdom Health Security Agency  (UKHSA)](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1044481/Technical-Briefing-31-Dec-2021-Omicron_severity_update.pdf) and [Public Health Ontario (PHO)](https://www.publichealthontario.ca/-/media/documents/ncov/epi/covid-19-epi-enhanced-estimates-omicron-severity-study.pdf?sc_lang=en) reports to understand the relationship between reported Omicron cases and the future number of hospitalizations and deaths.
 
-The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital admissions (0.41%), and 57 deaths (0.03%) up until December 29, 2021. The PHO study reports for Omicron: 29,594 cases, 75 hospitalizations or deaths (0.25%), and 3 deaths (0.01%) from November 22 - December 17, 2021. These studies were selected as the populations of the United Kingdom and Ontario have more similar age-structure to NL than South Africa, where relevant studies have been completed, but are not considered.
+The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital admissions (0.41%), and 57 deaths (0.03%) up until December 29, 2021. The PHO study reports for Omicron: 29,594 cases, 75 hospitalizations or deaths (0.25%), and 3 deaths (0.01%) from November 22 - December 17, 2021.
 
 ```{r, echo=FALSE,warning=FALSE}
 g2
 ```
 
-**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 3 days ([Maslo et al. 2021](https://jamanetwork.com/journals/jama/fullarticle/2787776)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized.
+**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 6 days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized.
 
 <!-- ```{r, echo=FALSE,warning=FALSE} -->
 <!-- g2b -->
