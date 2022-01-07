@@ -137,17 +137,17 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 0.99*UKh
+NLh = 1.35*UKh
 NLm = .1*ONm
 UK.rate = (data$EH+data$LG+data$CH+data$WH)/UKh
 UK.rate = cumsum(UK.rate)
-UK.rate[4:L] = UK.rate[4:L] - UK.rate[1:(L-3)]
+UK.rate[7:L] = UK.rate[7:L] - UK.rate[1:(L-6)]
 ON.rate = (data$EH+data$LG+data$CH+data$WH)/ONh
 ON.rate = cumsum(ON.rate)
-ON.rate[4:L] = ON.rate[4:L] - ON.rate[1:(L-3)]
+ON.rate[7:L] = ON.rate[7:L] - ON.rate[1:(L-6)]
 NL.rate = (data$EH+data$LG+data$CH+data$WH)/NLh 
 NL.rate = cumsum(NL.rate)
-NL.rate[4:L] = NL.rate[4:L] - NL.rate[1:(L-3)]
+NL.rate[7:L] = NL.rate[7:L] - NL.rate[1:(L-6)]
 
 UK.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/UKh
 ON.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/ONh
@@ -213,7 +213,7 @@ The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital
 g2
 ```
 
-**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 3 days ([Maslo et al. 2021](https://jamanetwork.com/journals/jama/fullarticle/2787776)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized.
+**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 6 days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized.
 
 <!-- ```{r, echo=FALSE,warning=FALSE} -->
 <!-- g2b -->
