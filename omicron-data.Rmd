@@ -36,8 +36,8 @@ data = rbind(data[1:10,],new1, new2,data[11:L,])
 NL.data = data
 L = length(data[,1])
 data2 = data.frame(date = rep(data$date,4), cases = c(data$EH, data$CH, data$WH, data$LG), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
-data3 = data.frame(date = rep(data$date,4), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
-T<-10
+data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069, data$total/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L)) 
+T<-7
 DT = function(){
 mod = nls(val ~ a*exp(r*seq(1,T)), 
                start = list(a = 100, r = 0.2))
@@ -47,8 +47,19 @@ mod = nls(val ~ a*exp(r*seq(1,T)),
 lambda = unname(coef(mod)[2])
 DT = c(round(log(2)/lambda,2), NA, NA)
 }
+
+HT = function(){
+mod = nls(val ~ a*exp(-r*seq(1,T)), 
+               start = list(a = 300, r = 0.2))
+#CI = confint(mod, level=0.95)
+#CI.lower = max(CI[2,1],0)
+#CI.upper = CI[2,2]
+lambda = unname(coef(mod)[2])
+DT = c(-round(log(.5)/lambda,2), NA, NA)
+}
+
 val <- tail(data$EH,T)
-DT.eastern = DT()
+DT.eastern = HT()
 val <- tail(data$CH,T)
 DT.central = DT()
 val <- tail(data$WH,T)
@@ -84,7 +95,7 @@ Comparisons, graphs, and analysis of reported cases in NL before and after Janua
 ```{r, echo=FALSE, warning = FALSE}
 g1=ggplot(data3, aes(x=date, y=cases, group = RHA)) +
 geom_line(aes(color=RHA))+
-geom_point(aes(color=RHA))+
+  geom_point(aes(color=RHA))+
   xlab("")+
   ylab("")+
   ggtitle("Reported cases per 100,000 people in each NL Regional Health Authority")+
@@ -112,19 +123,19 @@ g1
 
 **Figure 2.** 
 
-## Doubling times
+## Doubling and halving times
 
-The doubling time is the days until the number of reported cases doubles (assuming exponential growth). Our doubling time calculations consider the number of reported cases over the last `r T` days.
+The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
 
-**Newfoundland and Labrador: `r DT.NL[1]` days**
+**Newfoundland and Labrador: At peak**
 
-**Eastern Health: `r DT.eastern[1]` days** 
+**Eastern Health: Halving time:  `r DT.eastern[1]` days** 
 
-**Central Health: `r DT.central[1]` days** 
+**Central Health: At peak** 
 
-**Western Health: `r DT.western[1]` days** 
+**Western Health: At peak** 
 
-**Labrador-Grenfell Health: `r DT.labrador[1]` days** 
+**Labrador-Grenfell Health: At peak** 
 
 Fitting is performed using nonlinear least squares and do not account for the changes in PCR testing announced on [January 3](https://www.gov.nl.ca/releases/2022/health/0103n02/).
 
@@ -137,7 +148,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 1.35*UKh
+NLh = .95*ONh
 NLm = .1*ONm
 UK.rate = (data$EH+data$LG+data$CH+data$WH)/UKh
 UK.rate = cumsum(UK.rate)
