@@ -1,0 +1,101 @@
+---
+title: "COVID-19 in Newfoundland and Labrador"
+author: "Amy Hurford, Zahra Mohammadi, and Francis Anokye"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+require(ggplot2)
+require(patchwork)
+data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL.csv', fill=TRUE)
+# Fix problems with non-reporting days manually
+data[1,2:7] = data[1,2:7]/2
+# Need to add in December 16
+new1 = data[2,]
+L = length(data[,1])
+new1[1,1] = "2021-12-16"
+new1[1,2:7] = new1[2:7]/2
+data = rbind(data[1,],new1,data[2:L,])
+data[3,2:7] = data[2,2:7]
+data[11,2:7] = data[11,2:7]/3
+L = length(data[,1])
+new1[1,1] = "2021-12-25"
+new1[1,2:8] = data[11,2:8]
+new2 = new1
+new2[1,1] = "2021-12-26"
+data = rbind(data[1:10,],new1, new2,data[11:L,])
+NL.data = data
+L = length(data[,1])
+data2 = data.frame(date = rep(data$date,4), cases = c(data$EH, data$CH, data$WH, data$LG), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
+data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069, data$total/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L)) 
+T<-7
+DT = function(){
+mod = nls(val ~ a*exp(r*seq(1,T)), 
+               start = list(a = 100, r = 0.2))
+#CI = confint(mod, level=0.95)
+#CI.lower = max(CI[2,1],0)
+#CI.upper = CI[2,2]
+lambda = unname(coef(mod)[2])
+DT = c(round(log(2)/lambda,2), NA, NA)
+}
+
+HT = function(){
+mod = nls(val ~ a*exp(-r*seq(1,T)), 
+               start = list(a = 300, r = 0.2))
+#CI = confint(mod, level=0.95)
+#CI.lower = max(CI[2,1],0)
+#CI.upper = CI[2,2]
+lambda = unname(coef(mod)[2])
+DT = c(-round(log(.5)/lambda,2), NA, NA)
+}
+
+val <- tail(data$EH,T)
+DT.eastern = HT()
+val <- tail(data$CH,T)
+DT.central = DT()
+val <- tail(data$WH,T)
+DT.western = DT()
+val <- tail(data$LG,T)
+DT.labrador = DT()
+val <- tail(data$LG+data$EH+data$CH+data$WH,T)
+DT.NL = DT()
+```
+
+
+
+## Test (Jan 9) linear regression
+
+```{r, include=F, warning=FALSE}
+library(tidyverse)
+test.data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/Test_NL(twosources).csv', fill=TRUE)
+## fill the last tail of test.data (empty value)
+for (i in 1:length(test.data$numtest)){
+  if (is.na(test.data$numtest[i])) {
+    test.data$numtest[i] <- test.data$numtest[i-1] + 4000
+    # test.data$numtest[i] <- (test.data$numtest[i-1] + test.data$numtest[i-2])/4000
+  }
+}
+
+full.data <- cbind(NL.data, test.data$numtest)
+## change column name 
+names(full.data)[names(full.data) == "test.data$numtest"] <- "test"
+## Add NL population 
+full.data['population'] <- c(521542) ## NL population
+
+## Subset before Jan 3rd
+full.data1 = full.data %>% filter( date <= "2022-01-03")
+## After Jan 3rd
+full.data2 = full.data %>% filter( date > "2022-01-03")
+
+##  linear regression 
+LR.fit1 = lm(test ~ 0 + total + population , data=full.data1)
+summary(LR.fit1)
+
+LR.fit2 = lm(test ~ 0 + total + population , data=full.data2)
+summary(LR.fit2)
+
+```
