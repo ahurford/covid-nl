@@ -17,7 +17,24 @@ fontsize: 11pt
 require(ggplot2)
 require(patchwork)
 data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL.csv', fill=TRUE)
-# Fix problems with non-reporting days manually
+
+test <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/Test_NL(twosources).csv', fill=TRUE)
+
+
+# Dec 28  4174
+# Jan 1 4680
+# Jan 2 3354
+# Jan 8 4041
+
+
+test1 = test$total.test
+test1[2] = mean(c(test1[1],test1[3]))
+test1[4] = mean(c(test1[3],test1[5]))
+test1[11] = mean(c(test1[10],test1[14])-test1[10])*(1/4)+test1[10]
+test1[12] = mean(c(test1[10],test1[14])-test1[10])*(2/4)+test1[10]
+test1[13] = mean(c(test1[10],test1[14])-test1[10])*(3/4)+test1[10]
+test1 = diff(test1)
+
 data[1,2:7] = data[1,2:7]/2
 # Need to add in December 16
 new1 = data[2,]
@@ -33,6 +50,23 @@ new1[1,2:8] = data[11,2:8]
 new2 = new1
 new2[1,1] = "2021-12-26"
 data = rbind(data[1:10,],new1, new2,data[11:L,])
+
+L=length(data$total)
+cases = data$total[2:L]
+# Remove Christmas dates
+test1 = test1[-(10:12)]
+dd = tail(data$date,-1)
+dd = dd[-(10:12)]
+cases = cases[-(10:12)]
+L = length(cases)
+
+# Break Jan 3
+ind = 15
+cases1 = c(cases[1:ind], rep(0,L-ind))
+cases2 = c(rep(0,ind), cases[(ind+1):L])
+popn = rep((317664+91201+76608+36069),L)
+#mod = lm(test1 ~ cases1 + cases2 + popn + 0)
+
 NL.data = data
 L = length(data[,1])
 data2 = data.frame(date = rep(data$date,4), cases = c(data$EH, data$CH, data$WH, data$LG), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
@@ -46,6 +80,9 @@ mod = nls(val ~ a*exp(r*seq(1,T)),
 #CI.upper = CI[2,2]
 lambda = unname(coef(mod)[2])
 DT = c(round(log(2)/lambda,2), NA, NA)
+p1=summary(mod)$coefficients[,4]
+p = unname(p1[2])
+return(c(DT,p))
 }
 
 HT = function(){
@@ -56,10 +93,14 @@ mod = nls(val ~ a*exp(-r*seq(1,T)),
 #CI.upper = CI[2,2]
 lambda = unname(coef(mod)[2])
 DT = c(-round(log(.5)/lambda,2), NA, NA)
+p1=summary(mod)$coefficients[,4]
+p = unname(p1[2])
+return(c(DT,p))
 }
 
 val <- tail(data$EH,T)
 DT.eastern = HT()
+print(DT.eastern)
 val <- tail(data$CH,T)
 DT.central = DT()
 val <- tail(data$WH,T)
