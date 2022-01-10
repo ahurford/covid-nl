@@ -77,8 +77,8 @@ cases2 = c(rep(0,ind), cases3[(ind+1):L])
 popn = rep((317664+91201+76608+36069),L)
 popn = popn[-ind2]
 test3 = test3[-ind2]
-cases2 = cases2[-(ind2-ind)]
-cases1 = head(cases1,-1)
+cases2 = cases2[-ind2]
+cases1 = cases1[-ind2]
 mod = lm(test3 ~ cases1 + cases2 + popn + 0)
 
 a1 = round(unname(coef(mod)[1]),2)
