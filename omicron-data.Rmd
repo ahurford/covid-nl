@@ -94,6 +94,9 @@ data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, dat
 # Corrected data
 ind = min(which(data3$date=="2022-01-06"))
 EH.corr = data$EH + (a1-a2)*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
+i1=min(which(data3$date == "2021-12-29"))
+EH.corr[i1:ind] = EH.corr[i1:ind]+EH.corr[i1:ind]/sum(EH.corr[i1:ind])*680
+
 CH.corr = data$CH + (a1-a2)*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
 WH.corr = data$WH + (a1-a2)*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
 LG.corr = data$LG + (a1-a2)*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
@@ -160,12 +163,12 @@ The data begins on December 15, 2021, when the [first Omicron case](http://ntv.c
 
 [Recommendations for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) changed in NL on January 3rd, 2022, such that anyone that is a close contact of a case and has symptoms of COVID-19, should consider themselves a positive case and not schedule a PCR test. In British Columbia (BC), people under 65 are discouraged from seeking PCR testing. The [BC Modelling Group](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf) estimates that the number of cases reported in BC would be 3.6 times higher without this change in testing.
 
-To assess the impact of the change in PCR testing recommendations for NL, we assumed that the number of tests reported for NL on a given day is the sum of two components:
+To assess the impact of the change in PCR testing recommendations, we assumed that the number of tests reported for NL on a given day is the sum of two components:
 
 (1) $a_1$ or $a_2$: the number of tests arising due to a contact with a COVID-19 case reported 3 days earlier, and
 (2) $b$: the number of tests performed per person in NL;
 
-where $a_1$ is prior to January 6, and $a_2$ is after January 6th. We assume a 3 day lag between testing and reporting, such that if on January 3 symptomatic contacts of a case did not get tested the effect would first appear in the data reported on January 6. Using the data from the [Public Service Annoucements)](https://www.gov.nl.ca/releases/covid-19-news/) we estimate that:
+where $a_1$ is prior to January 6, and $a_2$ is after January 6th. We assume a 3 day lag between testing and reporting, such that if on January 3 symptomatic contacts of a case did not get tested the effect would first appear in the reporting on January 6. Using the data from the [Public Service Annoucements](https://www.gov.nl.ca/releases/covid-19-news/) we estimate that:
 
 $a_1=$  `r a1`  tests per case 3 days prior (to January 3)
 
@@ -173,13 +176,16 @@ $a_2=$ `r a2` tests per case 3 days prior (after January 3)
 
 $b=$ `r b` tests per person in NL.
 
-[On January 10, 2022, NL reported 680 cases](https://www.cbc.ca/news/canada/newfoundland-labrador/nl-covid-testing-delays-1.6309316) arising from tests sent out of province December 29 to January 6th. These cases are not considered in this analysis. 
 
-### Correcting for the testing change on January 3
+### Correcting for the PCR testing changes and out-of-province test results
 
-To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these test that did not occur would have been positive. We use this correction so that reported cases can be compared before and after January 6. All subsequent calculations use this correction for cases reported after January 6th.
+To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these test that did not occur would have been positive. We use this correction so that reported cases can be compared before and after January 6. 
 
-## Reported cases (including correction for January 3 testing change)
+[On January 10, 2022, NL reported 680 cases](https://www.gov.nl.ca/releases/2022/health/0110n04/) arising from tests sent out of province December 29 to January 6th. The numbers from the [Public Service Announcement](https://www.gov.nl.ca/releases/2022/health/0110n04/) suggest that all 680 cases were in Eastern Health. To correct the case data these 680 cases are distributed in Eastern Health in proportion to the number of reported cases on each day December 29 to January 6th. The addition of these cases is after the correction for the PCR testing change.
+
+All subsequent calculations are performed on the adjusted data.
+
+## Reported cases (with adjusted data)
 
 ```{r, echo=FALSE, warning = FALSE}
 g1=ggplot(data3.corr, aes(x=date, y=cases, group = RHA)) +
@@ -187,7 +193,7 @@ geom_line(aes(color=RHA))+
   geom_point(aes(color=RHA))+
   xlab("")+
   ylab("")+
-  ggtitle("Reported* cases per 100,000 people in each NL Regional Health Authority")+
+  ggtitle("Adjusted cases per 100,000 people in each NL Regional Health Authority")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
@@ -196,7 +202,7 @@ g=ggplot() +
 geom_line(data=data2.corr, aes(x=as.Date(date), y=NL, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$EH+data$WH+data$CH+data$LG))+
   xlab("")+
-  ylab("Reported cases")+
+  ylab("Reported and adjusted cases")+
   ggtitle("Newfoundland and Labrador")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
@@ -207,7 +213,7 @@ g.EH=ggplot() +
 geom_line(data=data2.corr, aes(x=as.Date(date), y=EH, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$EH))+
   xlab("")+
-  ylab("Reported cases")+
+  ylab("Reported and adjusted cases")+
   ggtitle("Eastern Health")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
@@ -218,7 +224,7 @@ g.CH=ggplot() +
 geom_line(data=data2.corr, aes(x=as.Date(date), y=CH, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$CH))+
   xlab("")+
-  ylab("Reported cases")+
+  ylab("Reported and adjusted cases")+
   ggtitle("Central Health")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
@@ -229,7 +235,7 @@ g.WH=ggplot() +
 geom_line(data=data2.corr, aes(x=as.Date(date), y=WH, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$WH))+
   xlab("")+
-  ylab("Reported cases")+
+  ylab("Reported and adjusted cases")+
   ggtitle("Western Health")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
@@ -240,7 +246,7 @@ g.LG=ggplot() +
 geom_line(data=data2.corr, aes(x=as.Date(date), y=LG, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$LG))+
   xlab("")+
-  ylab("Reported cases")+
+  ylab("Reported and adjusted cases")+
   ggtitle("Labrador-Grenfell Health")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
@@ -252,13 +258,13 @@ g.EH+g.CH
 g.WH+g.LG
 ```
 
-**Figure 1.** The correction for the January 3 PCR testing change (line) and reported cases (dots). We assume a 3 day lag for test results such that the January 3 testing change first affects the data on January 6.
+**Figure 1.** The adjustment for the PCR testing change and out-of-province reporting (line) and reported cases (dots). We assume a 3 day lag for test results such that the January 3 testing change first affects the data on January 6. All 680 cases reported from out-of-province testing on January 10 are assigned to Eastern Health from December 29 to January 6 in proportion to the cases from this date range.
 
 ```{r,echo=F}
 g1
 ```
 
-**Figure 2.** *Data after January 6th is corrected for the January 3rd testing change. 
+**Figure 2.** Data is adjusted for the changes to PCR testing and the reporting of testing performed out-of-province.
 
 ## Doubling and halving times
 
@@ -285,7 +291,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = .95*ONh
+NLh = 1.2*ONh
 NLm = .1*ONm
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
