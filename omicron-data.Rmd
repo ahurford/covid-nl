@@ -58,19 +58,43 @@ test1 = test1[-(10:12)]
 dd = tail(data$date,-1)
 dd = dd[-(10:12)]
 cases = cases[-(10:12)]
-L = length(cases)
+
+
+# Lag cases by 3 days:
+lag = 3
+test3 = tail(test1,-lag)
+dd3 = head(dd,-lag)
+cases3 = head(cases,-lag)
+L = length(cases3)
 
 # Break Jan 3
-ind = 15
-cases1 = c(cases[1:ind], rep(0,L-ind))
-cases2 = c(rep(0,ind), cases[(ind+1):L])
+ind = which(dd3 == "2022-01-03")
+cases1 = c(cases3[1:ind], rep(0,(L-ind)))
+cases2 = c(rep(0,ind), cases3[(ind+1):L])
 popn = rep((317664+91201+76608+36069),L)
-#mod = lm(test1 ~ cases1 + cases2 + popn + 0)
+mod = lm(test3 ~ cases1 + cases2 + popn + 0)
+
+a1 = round(unname(coef(mod)[1]),2)
+a2 = round(unname(coef(mod)[2]),2)
+b = round(unname(coef(mod)[3]),2)
+
 
 NL.data = data
 L = length(data[,1])
 data2 = data.frame(date = rep(data$date,4), cases = c(data$EH, data$CH, data$WH, data$LG), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
-data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069, data$total/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L)) 
+data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069, data$total/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L))
+
+# Corrected data
+ind = min(which(data3$date=="2022-01-06"))
+EH.corr = data$EH + (a1-a2)*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
+CH.corr = data$CH + (a1-a2)*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
+WH.corr = data$WH + (a1-a2)*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
+LG.corr = data$LG + (a1-a2)*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
+NL.corr = EH.corr + CH.corr + WH.corr + LG.corr
+data2.corr = data.frame(date = data$date, EH = EH.corr, NL = NL.corr, WH= WH.corr, LG = LG.corr, CH = CH.corr) 
+data3.corr = data.frame(date = rep(data$date,5), cases = 100000*c(EH.corr/317664, CH.corr/91201, WH.corr/76608, LG.corr/36069,(EH.corr+CH.corr+WH.corr+LG.corr)/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L))
+
+
 T<-7
 DT = function(){
 mod = nls(val ~ a*exp(r*seq(1,T)), 
@@ -98,17 +122,17 @@ p = unname(p1[2])
 return(c(DT,p))
 }
 
-val <- tail(data$EH,T)
-DT.eastern = HT()
+val <- tail(EH.corr,T)
+DT.eastern = DT()
 print(DT.eastern)
-val <- tail(data$CH,T)
+val <- tail(CH.corr,T)
 DT.central = DT()
-val <- tail(data$WH,T)
+val <- tail(WH.corr,T)
 DT.western = DT()
-val <- tail(data$LG,T)
+val <- tail(LG.corr,T)
 DT.labrador = DT()
-val <- tail(data$LG+data$EH+data$CH+data$WH,T)
-DT.NL = HT()
+val <- tail(NL.corr,T)
+DT.NL = DT()
 ```
 
 <div class="alert alert-info">
@@ -127,50 +151,113 @@ The data begins on December 15, 2021, when the [first Omicron case](http://ntv.c
 
 ## Testing
 
-[Eligibility for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) changed in NL on January 3rd, 2022, such that anyone that is a close contact of a case and has symptoms of COVID-19, should consider themselves a positive case. In British Columbia (BC), people under 65 are discouraged from seeking PCR testing. The [BC Modelling Group](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf) estimates that the number of cases reported in BC would be 3.6 times higher without this change in testing.
+[Recommendations for PCR testing](https://www.gov.nl.ca/releases/2022/health/0103n02/) changed in NL on January 3rd, 2022, such that anyone that is a close contact of a case and has symptoms of COVID-19, should consider themselves a positive case and not schedule a PCR test. In British Columbia (BC), people under 65 are discouraged from seeking PCR testing. The [BC Modelling Group](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf) estimates that the number of cases reported in BC would be 3.6 times higher without this change in testing.
 
-Comparisons, graphs, and analysis of reported cases in NL before and after January 3rd, 2022, should be treated with caution as it is not known how much the changes in PCR testing have resulted in under-counting of COVID-19 cases after January 3rd.
+To assess the impact of the change in PCR testing recommendations for NL, we assumed that the number of tests reported for NL on a given day is the sum of two components:
 
-## Reported cases
+(1) $a_1$ or $a_2$: the number of tests arising due to a contact with a COVID-19 case reported 3 days earlier, and
+(2) $b$: the number of tests performed per person in NL;
+
+where $a_1$ is prior to January 6, and $a_2$ is after January 6th. We assume a 3 day lag between testing and reporting, such that if on January 3 symptomatic contacts of a case did not get tested the effect would first appear in the data reported on January 6. Using the data from the [Public Service Annoucements)](https://www.gov.nl.ca/releases/covid-19-news/) we estimate that:
+
+$a_1=$  `r a1`  tests per case 3 days prior (to January 3)
+
+$a_2=$ `r a2` tests per case 3 days prior (after January 3)
+
+$b=$ `r b` tests per person in NL.
+
+### Correcting for the testing change on January 3
+
+To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these test that did not occur would have been positive. We use this correction so that reported cases can be compared before and after January 6. All subsequent calculations use this correction for cases reported after January 6th.
+
+## Reported cases (including correction for January 3 testing change)
 
 ```{r, echo=FALSE, warning = FALSE}
-g1=ggplot(data3, aes(x=date, y=cases, group = RHA)) +
+g1=ggplot(data3.corr, aes(x=date, y=cases, group = RHA)) +
 geom_line(aes(color=RHA))+
   geom_point(aes(color=RHA))+
   xlab("")+
   ylab("")+
-  ggtitle("Reported cases per 100,000 people in each NL Regional Health Authority")+
+  ggtitle("Reported* cases per 100,000 people in each NL Regional Health Authority")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
 
-g=ggplot(data2, aes(x=date, y=cases, group = RHA)) +
-geom_line(aes(color=RHA))+
-geom_point(aes(color=RHA))+
+g=ggplot() +
+geom_line(data=data2.corr, aes(x=as.Date(date), y=NL, group=1))+
+geom_point(aes(x=as.Date(data$date), y=data$EH+data$WH+data$CH+data$LG))+
   xlab("")+
-  ylab("")+
-  ggtitle("Reported cases by NL Regional Health Authority")+
+  ylab("Reported cases")+
+  ggtitle("Newfoundland and Labrador")+
   #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
 theme_classic()+
+  scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+
+g.EH=ggplot() +
+geom_line(data=data2.corr, aes(x=as.Date(date), y=EH, group=1))+
+geom_point(aes(x=as.Date(data$date), y=data$EH))+
+  xlab("")+
+  ylab("Reported cases")+
+  ggtitle("Eastern Health")+
+  #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
+theme_classic()+
+  scale_x_date(date_breaks = "2 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+
+g.CH=ggplot() +
+geom_line(data=data2.corr, aes(x=as.Date(date), y=CH, group=1))+
+geom_point(aes(x=as.Date(data$date), y=data$CH))+
+  xlab("")+
+  ylab("Reported cases")+
+  ggtitle("Central Health")+
+  #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
+theme_classic()+
+  scale_x_date(date_breaks = "2 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+
+g.WH=ggplot() +
+geom_line(data=data2.corr, aes(x=as.Date(date), y=WH, group=1))+
+geom_point(aes(x=as.Date(data$date), y=data$WH))+
+  xlab("")+
+  ylab("Reported cases")+
+  ggtitle("Western Health")+
+  #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
+theme_classic()+
+  scale_x_date(date_breaks = "2 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+
+g.LG=ggplot() +
+geom_line(data=data2.corr, aes(x=as.Date(date), y=LG, group=1))+
+geom_point(aes(x=as.Date(data$date), y=data$LG))+
+  xlab("")+
+  ylab("Reported cases")+
+  ggtitle("Labrador-Grenfell Health")+
+  #ggtitle(paste("At entry: ", exp.on.entry,"days since exposure"))+
+theme_classic()+
+  scale_x_date(date_breaks = "2 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
+
 g
+g.EH+g.CH
+g.WH+g.LG
 ```
 
-**Figure 1.** 
+**Figure 1.** The correction for the January 3 PCR testing change (line) and reported cases (dots). We assume a 3 day lag for test results such that the January 3 testing change first affects the data on January 6.
 
 ```{r,echo=F}
 g1
 ```
 
-**Figure 2.** 
+**Figure 2.** *Data after January 6th is corrected for the January 3rd testing change. 
 
 ## Doubling and halving times
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
 
-**Newfoundland and Labrador: Halving time:  `r round(DT.NL[1],1)` days** 
+**Newfoundland and Labrador: Halving time:  At peak** 
 
-**Eastern Health: Halving time:  `r round(DT.eastern[1],1)` days** 
+**Eastern Health: Halving time: At peak** 
 
 **Central Health: At peak** 
 
@@ -178,7 +265,7 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 **Labrador-Grenfell Health: At peak**
 
-Fitting is performed using nonlinear least squares and do not account for the changes in PCR testing announced on [January 3](https://www.gov.nl.ca/releases/2022/health/0103n02/).
+Fitting is performed using nonlinear least squares and considers the data corrected for the changes in PCR testing announced on [January 3](https://www.gov.nl.ca/releases/2022/health/0103n02/).
 
 ```{r, include=F, warning=FALSE}
  
@@ -191,24 +278,24 @@ ONh = (29594/75)
 ONm = (29594/3)
 NLh = .95*ONh
 NLm = .1*ONm
-UK.rate = (data$EH+data$LG+data$CH+data$WH)/UKh
+UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 UK.rate[7:L] = UK.rate[7:L] - UK.rate[1:(L-6)]
-ON.rate = (data$EH+data$LG+data$CH+data$WH)/ONh
+ON.rate = NL.corr/ONh
 ON.rate = cumsum(ON.rate)
 ON.rate[7:L] = ON.rate[7:L] - ON.rate[1:(L-6)]
-NL.rate = (data$EH+data$LG+data$CH+data$WH)/NLh 
+NL.rate = NL.corr/NLh 
 NL.rate = cumsum(NL.rate)
 NL.rate[7:L] = NL.rate[7:L] - NL.rate[1:(L-6)]
 
-UK.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/UKh
-ON.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/ONh
-NL.rate.ad = cumsum(data$EH+data$LG+data$CH+data$WH)/NLh
+UK.rate.ad = cumsum(NL.corr)/UKh
+ON.rate.ad = cumsum(NL.corr)/ONh
+NL.rate.ad = cumsum(NL.corr)/NLh
 
 # 649834/57 - 5 days median time to death.
-UK.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/UKm
-ON.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/ONm
-NL.rate.m = cumsum(data$EH+data$LG+data$CH+data$WH)/NLm
+UK.rate.m = cumsum(NL.corr)/UKm
+ON.rate.m = cumsum(NL.corr)/ONm
+NL.rate.m = cumsum(NL.corr)/NLm
 future.dates = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 8, by = "days"),-1)
 days2 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-7),future.dates)
 future.dates.5 = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 6, by = "days"),-1)
@@ -265,7 +352,7 @@ The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital
 g2
 ```
 
-**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 6 days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized.
+**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 6 days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider reported cases with a correction for changes in PCR testing on January 3.
 
 <!-- ```{r, echo=FALSE,warning=FALSE} -->
 <!-- g2b -->
@@ -278,6 +365,6 @@ g2
 g3
 ```
 
-**Figure 4.** The black dots and lines are the number of deaths as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume the time from being reported as a case to death is 5 days, which is the median time from specimen to death in the UKHSA study. Cumulative deaths since December 15, 2021 when assuming the reported proportion of deaths for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes that death occurs for `r round(100/NLm,2)`% of reported cases.
+**Figure 4.** The black dots and lines are the number of deaths as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume the time from being reported as a case to death is 5 days, which is the median time from specimen to death in the UKHSA study. Cumulative deaths since December 15, 2021 when assuming the reported proportion of deaths for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes that death occurs for `r round(100/NLm,2)`% of reported cases. These calculations consider reported cases with a correction for changes in PCR testing on January 3.
 
 
