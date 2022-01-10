@@ -68,10 +68,17 @@ cases3 = head(cases,-lag)
 L = length(cases3)
 
 # Break Jan 3
+
 ind = which(dd3 == "2022-01-03")
+ind2 = which(dd3 == "2022-01-07") # Excludes Jan 10 which was abnormally high day for tests.
+# The above will need to be modified if testing to notification lag is different
 cases1 = c(cases3[1:ind], rep(0,(L-ind)))
 cases2 = c(rep(0,ind), cases3[(ind+1):L])
 popn = rep((317664+91201+76608+36069),L)
+popn = popn[-ind2]
+test3 = test3[-ind2]
+cases2 = cases2[-(ind2-ind)]
+cases1 = head(cases1,-1)
 mod = lm(test3 ~ cases1 + cases2 + popn + 0)
 
 a1 = round(unname(coef(mod)[1]),2)
@@ -166,6 +173,8 @@ $a_2=$ `r a2` tests per case 3 days prior (after January 3)
 
 $b=$ `r b` tests per person in NL.
 
+[On January 10, 2022, NL reported 680 cases](https://www.cbc.ca/news/canada/newfoundland-labrador/nl-covid-testing-delays-1.6309316) arising from tests sent out of province December 29 to January 6th. These cases are not considered in this analysis. 
+
 ### Correcting for the testing change on January 3
 
 To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these test that did not occur would have been positive. We use this correction so that reported cases can be compared before and after January 6. All subsequent calculations use this correction for cases reported after January 6th.
@@ -255,9 +264,9 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
 
-**Newfoundland and Labrador: Halving time:  At peak** 
+**Newfoundland and Labrador: At peak** 
 
-**Eastern Health: Halving time: At peak** 
+**Eastern Health: At peak** 
 
 **Central Health: At peak** 
 
