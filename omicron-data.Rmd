@@ -108,7 +108,7 @@ DT.western = DT()
 val <- tail(data$LG,T)
 DT.labrador = DT()
 val <- tail(data$LG+data$EH+data$CH+data$WH,T)
-DT.NL = DT()
+DT.NL = HT()
 ```
 
 <div class="alert alert-info">
@@ -168,15 +168,15 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
 
-**Newfoundland and Labrador: At peak**
+**Newfoundland and Labrador: Halving time:  `r round(DT.NL[1],1)` days** 
 
-**Eastern Health: Halving time:  `r DT.eastern[1]` days** 
+**Eastern Health: Halving time:  `r round(DT.eastern[1],1)` days** 
 
 **Central Health: At peak** 
 
 **Western Health: At peak** 
 
-**Labrador-Grenfell Health: At peak** 
+**Labrador-Grenfell Health: At peak**
 
 Fitting is performed using nonlinear least squares and do not account for the changes in PCR testing announced on [January 3](https://www.gov.nl.ca/releases/2022/health/0103n02/).
 
