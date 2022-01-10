@@ -367,7 +367,7 @@ The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital
 g2
 ```
 
-**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 6 days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider reported cases with a correction for changes in PCR testing on January 3.
+**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 6 days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider the adjusted case data.
 
 <!-- ```{r, echo=FALSE,warning=FALSE} -->
 <!-- g2b -->
@@ -380,6 +380,6 @@ g2
 g3
 ```
 
-**Figure 4.** The black dots and lines are the number of deaths as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume the time from being reported as a case to death is 5 days, which is the median time from specimen to death in the UKHSA study. Cumulative deaths since December 15, 2021 when assuming the reported proportion of deaths for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes that death occurs for `r round(100/NLm,2)`% of reported cases. These calculations consider reported cases with a correction for changes in PCR testing on January 3.
+**Figure 4.** The black dots and lines are the number of deaths as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume the time from being reported as a case to death is 5 days, which is the median time from specimen to death in the UKHSA study. Cumulative deaths since December 15, 2021 when assuming the reported proportion of deaths for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes that death occurs for `r round(100/NLm,2)`% of reported cases. These calculations consider the adjusted case data.
 
 
