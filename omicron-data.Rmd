@@ -75,10 +75,10 @@ ind2 = which(dd3 == "2022-01-07") # Excludes Jan 10 which was abnormally high da
 cases1 = c(cases3[1:ind], rep(0,(L-ind)))
 cases2 = c(rep(0,ind), cases3[(ind+1):L])
 popn = rep((317664+91201+76608+36069),L)
-popn = popn[-ind2]
-test3 = test3[-ind2]
-cases2 = cases2[-ind2]
-cases1 = cases1[-ind2]
+popn = popn[-(ind2:L)]
+test3 = test3[-(ind2:L)]
+cases2 = cases2[-(ind2:L)]
+cases1 = cases1[-(ind2:L)]
 mod = lm(test3 ~ cases1 + cases2 + popn + 0)
 
 a1 = round(unname(coef(mod)[1]),2)
@@ -142,7 +142,7 @@ DT.western = DT()
 val <- tail(LG.corr,T)
 DT.labrador = DT()
 val <- tail(NL.corr,T)
-DT.NL = DT()
+DT.NL = HT()
 ```
 
 <div class="alert alert-info">
@@ -270,7 +270,7 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
 
-**Newfoundland and Labrador: At peak** 
+**Newfoundland and Labrador: Halving time `r DT.NL[1]` days** 
 
 **Eastern Health: At peak** 
 
