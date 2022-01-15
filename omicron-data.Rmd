@@ -38,6 +38,7 @@ test <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/Tes
 # 3. Check doubling times, i.e. DT.NL. The forth entry is significance. If >0.05 report as "Plateau". If significant report as doubling time or halving time - whichever function is called HT() or DT(). If the first element of DT.NL is negative switch from DT() to HT(). Check all of DT.eastern, DT.central, DT.western, DT.labrador, DT.NL, and write in the correct values in the text.
 # 4. Check the testing regression. Is a2<a1? In the text we say it is.
 # 5. Check the hospitalization and mortality graphs. If the calibration is poor, choose new values of NLh and NLm
+# 6. Manually move and rename omicron-data.html to index.html in the docs folder
 
 ## This averages the test results across days when there is no reporting
 test1 = test$total.test
@@ -197,7 +198,7 @@ The data begins on December 15, 2021, when the [first Omicron case](http://ntv.c
 </div>
 
 ## Data limitations
-On January 12, Dr. Rahman presented the provincial modelling. Some of Dr. Rahman's graphs considered [specimen date](https://twitter.com/PeterCBC/status/1481323100163784708) rather than report date. These data, by specimen date, are a more accurate representation of the COVID-19 outbreak in NL. This website considers only report date as specimen dates are not reported in the Public Service Advisories.
+On January 12, Dr. Rahman presented the provincial modelling. Some of Dr. Rahman's graphs considered [specimen date](https://twitter.com/PeterCBC/status/1481323100163784708) rather than report date. These data, by specimen date, are a more accurate representation of the COVID-19 outbreak in NL. This website considers only report date as specimen dates are not reported in the [Public Service Advisories]((https://www.gov.nl.ca/releases/covid-19-news/)).
 
 ## Testing
 
@@ -205,8 +206,8 @@ On January 12, Dr. Rahman presented the provincial modelling. Some of Dr. Rahman
 
 To assess the impact of the change in PCR testing recommendations, we assumed that the number of tests reported for NL on a given day is the sum of two components:
 
-(1) $a_1$ or $a_2$: the number of tests arising due to a contact with a COVID-19 case reported 3 days earlier, and
-(2) $b$: the number of tests performed per person in NL;
+$a_1$ or $a_2$: the number of tests arising due to a contact with a COVID-19 case reported 3 days earlier, and
+$b$: the number of tests performed per person in NL;
 
 where $a_1$ is prior to January 6, and $a_2$ is after January 6th. We assume a 3 day lag between testing and reporting, such that if on January 3 symptomatic contacts of a case did not get tested the effect would first appear in the reporting on January 6. Using the data from the [Public Service Annoucements](https://www.gov.nl.ca/releases/covid-19-news/) we estimate that:
 
@@ -220,7 +221,7 @@ This suggests that after January 3rd, `r a1 - a2` fewer tests were performed per
 
 ### Adjusted cases: correcting for the PCR testing changes and out-of-province test results
 
-To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these test that did not occur would have been positive. We use this correction so that reported cases can be compared before and after January 6. 
+To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these tests that did not occur would have been positive. We use this adjustment so that reported cases can be compared before and after January 6. 
 
 [On January 10, 2022, NL reported 680 cases](https://www.gov.nl.ca/releases/2022/health/0110n04/) arising from tests sent out of province December 29 to January 6th. The numbers from the [Public Service Announcement](https://www.gov.nl.ca/releases/2022/health/0110n04/) suggest that all 680 cases were in Eastern Health. To correct the case data these 680 cases are distributed in Eastern Health in proportion to the number of reported cases on each day December 29 to January 6th. The addition of these cases is after the correction for the PCR testing change.
 
@@ -228,7 +229,7 @@ Cases from out-of-province testing have also been reported on the days after Jan
 
 All subsequent calculations are performed on the adjusted data.
 
-## Reported cases (with adjusted data)
+## Adjusted cases
 
 ```{r, echo=FALSE, warning = FALSE}
 g1=ggplot(data3.corr, aes(x=date, y=cases, group = RHA)) +
@@ -311,19 +312,19 @@ g1
 
 ## Doubling and halving times
 
-The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
+The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'level'.
 
 Due to assumed pending test results that have been sent out-of-province for Eastern Health and Labrador, we exclude the last 3 days from calculations of doubling/halving time.
 
-**Newfoundland and Labrador: At peak** 
+**Newfoundland and Labrador: level** 
 
-**Eastern Health: At peak** 
+**Eastern Health: level** 
 
-**Central Health: At peak** 
+**Central Health: level** 
 
-**Western Health: At peak** 
+**Western Health: level** 
 
-**Labrador-Grenfell Health: At peak**
+**Labrador-Grenfell Health: level**
 
 Fitting is performed using nonlinear least squares and considers the adjusted data.
 
