@@ -20,11 +20,13 @@ data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL.
 
 test <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/Test_NL(twosources).csv', fill=TRUE)
 
-
-# Dec 28  4174
+# These data points are only reported on twitter: Health and community services NL
+# Dec 28 4174
 # Jan 1 4680
 # Jan 2 3354
 # Jan 8 4041
+
+# Unfortunately quite a lot of this script is not automated and requires manual consideration.
 
 
 test1 = test$total.test
@@ -75,10 +77,10 @@ ind2 = which(dd3 == "2022-01-07") # Excludes Jan 10 which was abnormally high da
 cases1 = c(cases3[1:ind], rep(0,(L-ind)))
 cases2 = c(rep(0,ind), cases3[(ind+1):L])
 popn = rep((317664+91201+76608+36069),L)
-popn = popn[-(ind2:L)]
-test3 = test3[-(ind2:L)]
-cases2 = cases2[-(ind2:L)]
-cases1 = cases1[-(ind2:L)]
+#popn = popn[-(ind2:L)]
+#test3 = test3[-(ind2:L)]
+#cases2 = cases2[-(ind2:L)]
+#cases1 = cases1[-(ind2:L)]
 mod = lm(test3 ~ cases1 + cases2 + popn + 0)
 
 a1 = round(unname(coef(mod)[1]),2)
@@ -92,14 +94,23 @@ data2 = data.frame(date = rep(data$date,4), cases = c(data$EH, data$CH, data$WH,
 data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069, data$total/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L))
 
 # Corrected data
+corr = 0
 ind = min(which(data3$date=="2022-01-06"))
-EH.corr = data$EH + (a1-a2)*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
+EH.corr = data$EH + corr*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
 i1=min(which(data3$date == "2021-12-29"))
 EH.corr[i1:ind] = EH.corr[i1:ind]+EH.corr[i1:ind]/sum(EH.corr[i1:ind])*680
+#323 on Dec 11
+EH.corr[(i1+1):(ind+1)] = EH.corr[(i1+1):(ind+1)]+EH.corr[(i1+1):(ind+1)]/sum(EH.corr[(i1+1):(ind+1)])*323
+#229 on Dec 12
+EH.corr[(i1+2):(ind+2)] = EH.corr[(i1+2):(ind+2)]+EH.corr[(i1+2):(ind+2)]/sum(EH.corr[(i1+2):(ind+2)])*229
+#166 on Dec 13
+EH.corr[(i1+3):(ind+3)] = EH.corr[(i1+3):(ind+3)]+EH.corr[(i1+3):(ind+3)]/sum(EH.corr[(i1+3):(ind+3)])*166
+# 71 on Jan 14
+EH.corr[(i1+4):(ind+4)] = EH.corr[(i1+4):(ind+4)]+EH.corr[(i1+4):(ind+3)]/sum(EH.corr[(i1+4):(ind+4)])*71
 
-CH.corr = data$CH + (a1-a2)*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
-WH.corr = data$WH + (a1-a2)*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
-LG.corr = data$LG + (a1-a2)*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
+CH.corr = data$CH + corr*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
+WH.corr = data$WH + corr*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
+LG.corr = data$LG + corr*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
 NL.corr = EH.corr + CH.corr + WH.corr + LG.corr
 data2.corr = data.frame(date = data$date, EH = EH.corr, NL = NL.corr, WH= WH.corr, LG = LG.corr, CH = CH.corr) 
 data3.corr = data.frame(date = rep(data$date,5), cases = 100000*c(EH.corr/317664, CH.corr/91201, WH.corr/76608, LG.corr/36069,(EH.corr+CH.corr+WH.corr+LG.corr)/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L))
@@ -132,16 +143,16 @@ p = unname(p1[2])
 return(c(DT,p))
 }
 
-val <- tail(EH.corr,T)
-DT.eastern = DT()
+val <- head(tail(EH.corr,(T+6)),-6)
+DT.eastern = HT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
-DT.central = DT()
+DT.central = HT()
 val <- tail(WH.corr,T)
-DT.western = DT()
+DT.western = HT()
 val <- tail(LG.corr,T)
-DT.labrador = DT()
-val <- tail(NL.corr,T)
+DT.labrador = HT()
+val <- head(tail(NL.corr,(T+6)),-6)
 DT.NL = HT()
 ```
 
@@ -158,6 +169,11 @@ On this website we:
 The data begins on December 15, 2021, when the [first Omicron case](http://ntv.ca/province-confirms-first-case-of-omicron-variant-introduces-new-public-health-measures/) was reported in NL.
 
 </div>
+
+## Data limitations
+On January 12, Dr. Rahman presented the provincial modelling. Several of the graphs provided considered specimen date, rather than report date, and these data represent a more accurate representation of the COVID-19 outbreak in NL.
+
+This report considers only report date, as specimen dates are not reported in the public service advisories.
 
 ## Testing
 
@@ -176,6 +192,7 @@ $a_2=$ `r a2` tests per case 3 days prior (after January 3)
 
 $b=$ `r b` tests per person in NL.
 
+Since $a_2 > a_1$ this means that more tests per case have been performed after the change to recommendations for who should get PCR tested. We conclude that the change in recommendations for PCR testing did not affect the PCR testing rate before and after January 3rd.
 
 ### Correcting for the PCR testing changes and out-of-province test results
 
@@ -270,7 +287,7 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
 
-**Newfoundland and Labrador: Halving time `r DT.NL[1]` days** 
+**Newfoundland and Labrador: At peak** 
 
 **Eastern Health: At peak** 
 
