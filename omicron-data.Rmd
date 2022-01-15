@@ -121,7 +121,9 @@ EH.corr[(i1+2):(ind+2)] = EH.corr[(i1+2):(ind+2)]+EH.corr[(i1+2):(ind+2)]/sum(EH
 #166 on Dec 13
 EH.corr[(i1+3):(ind+3)] = EH.corr[(i1+3):(ind+3)]+EH.corr[(i1+3):(ind+3)]/sum(EH.corr[(i1+3):(ind+3)])*166
 # 71 on Jan 14
-EH.corr[(i1+4):(ind+4)] = EH.corr[(i1+4):(ind+4)]+EH.corr[(i1+4):(ind+3)]/sum(EH.corr[(i1+4):(ind+4)])*71
+EH.corr[(i1+4):(ind+4)] = EH.corr[(i1+4):(ind+4)]+EH.corr[(i1+4):(ind+4)]/sum(EH.corr[(i1+4):(ind+4)])*71
+# 71 on Jan 15
+EH.corr[(i1+5):(ind+5)] = EH.corr[(i1+5):(ind+5)]+EH.corr[(i1+5):(ind+5)]/sum(EH.corr[(i1+5):(ind+5)])*3
 
 # Corrections for PCR changes
 CH.corr = data$CH + corr*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
@@ -316,11 +318,11 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 Due to assumed pending test results that have been sent out-of-province for Eastern Health and Labrador, we exclude the last 3 days from calculations of doubling/halving time.
 
-**Newfoundland and Labrador: level** 
+**Newfoundland and Labrador: Declining with a halving time of `r DT.NL[1]` days** 
 
 **Eastern Health: level** 
 
-**Central Health: level** 
+**Central Health: Declining with a halving time of `r DT.central[1]` days** 
 
 **Western Health: level** 
 
