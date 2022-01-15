@@ -20,15 +20,26 @@ data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL.
 
 test <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/Test_NL(twosources).csv', fill=TRUE)
 
-# These data points are only reported on twitter: Health and community services NL
+## These data points are only reported on twitter: Health and community services NL
 # Dec 28 4174
 # Jan 1 4680
 # Jan 2 3354
 # Jan 8 4041
 
-# Unfortunately quite a lot of this script is not automated and requires manual consideration.
+## Unfortunately quite a lot of this script is not automated and requires manual entry.
+# 1. Manually enter data in NL.csv and two-sources.csv.
+#  - From the PSAs. For each RHA you need to add the number of male + female + unknown cases.
+#  - For Eastern health subtract the number of tests that were send out of province.
+#  - Active hospitalizations & deaths are reported after the regional breakdown. Deaths is cumulative, so if
+#   1 death is reported add +1 to the last entry. For hosptializations it is not cumulative - just the number   #    they report as in hospital on that day.
+#    The number of cases being sent out of provinces needs to be manually entered in this code.
 
+# 2. Knit script.
+# 3. Check doubling times, i.e. DT.NL. The forth entry is significance. If >0.05 report as "Plateau". If significant report as doubling time or halving time - whichever function is called HT() or DT(). If the first element of DT.NL is negative switch from DT() to HT(). Check all of DT.eastern, DT.central, DT.western, DT.labrador, DT.NL, and write in the correct values in the text.
+# 4. Check the testing regression. Is a2<a1? In the text we say it is.
+# 5. Check the hospitalization and mortality graphs. If the calibration is poor, choose new values of NLh and NLm
 
+## This averages the test results across days when there is no reporting
 test1 = test$total.test
 test1[2] = mean(c(test1[1],test1[3]))
 test1[4] = mean(c(test1[3],test1[5]))
@@ -37,6 +48,7 @@ test1[12] = mean(c(test1[10],test1[14])-test1[10])*(2/4)+test1[10]
 test1[13] = mean(c(test1[10],test1[14])-test1[10])*(3/4)+test1[10]
 test1 = diff(test1)
 
+## This averages the data across days when there is no reporting
 data[1,2:7] = data[1,2:7]/2
 # Need to add in December 16
 new1 = data[2,]
@@ -53,6 +65,7 @@ new2 = new1
 new2[1,1] = "2021-12-26"
 data = rbind(data[1:10,],new1, new2,data[11:L,])
 
+## This is the regression on tests
 L=length(data$total)
 cases = data$total[2:L]
 # Remove Christmas dates
@@ -61,7 +74,6 @@ dd = tail(data$date,-1)
 dd = dd[-(10:12)]
 cases = cases[-(10:12)]
 
-
 # Lag cases by 3 days:
 lag = 3
 test3 = tail(test1,-lag)
@@ -69,34 +81,36 @@ dd3 = head(dd,-lag)
 cases3 = head(cases,-lag)
 L = length(cases3)
 
-# Break Jan 3
-
+# Break Jan 3 when changes to PCR were announced
 ind = which(dd3 == "2022-01-03")
-ind2 = which(dd3 == "2022-01-07") # Excludes Jan 10 which was abnormally high day for tests.
+ind2 = which(dd3 == "2022-01-07") # Excludes Jan 10 which was abnormally high day for tests > 7000.
 # The above will need to be modified if testing to notification lag is different
 cases1 = c(cases3[1:ind], rep(0,(L-ind)))
 cases2 = c(rep(0,ind), cases3[(ind+1):L])
 popn = rep((317664+91201+76608+36069),L)
-#popn = popn[-(ind2:L)]
-#test3 = test3[-(ind2:L)]
-#cases2 = cases2[-(ind2:L)]
-#cases1 = cases1[-(ind2:L)]
+popn = popn[-(ind2:L)]
+test3 = test3[-(ind2:L)]
+cases2 = cases2[-(ind2:L)]
+cases1 = cases1[-(ind2:L)]
 mod = lm(test3 ~ cases1 + cases2 + popn + 0)
 
 a1 = round(unname(coef(mod)[1]),2)
 a2 = round(unname(coef(mod)[2]),2)
 b = round(unname(coef(mod)[3]),2)
 
-
+## Making a dataframe for plotting
 NL.data = data
 L = length(data[,1])
 data2 = data.frame(date = rep(data$date,4), cases = c(data$EH, data$CH, data$WH, data$LG), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell"), each=L)) 
 data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, data$CH/91201, data$WH/76608, data$LG/36069, data$total/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L))
 
-# Corrected data
-corr = 0
+## Correcting the data for the change in PCR testing on Jan 3 & distributing the test results for the
+## out-of-province reporting across a range of days.
+corr = a1-a2
 ind = min(which(data3$date=="2022-01-06"))
+# PCR tsting change to EH
 EH.corr = data$EH + corr*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
+# Re-distributing the cases reported on Jan 10, which were collected Dec 29 to 
 i1=min(which(data3$date == "2021-12-29"))
 EH.corr[i1:ind] = EH.corr[i1:ind]+EH.corr[i1:ind]/sum(EH.corr[i1:ind])*680
 #323 on Dec 11
@@ -108,18 +122,26 @@ EH.corr[(i1+3):(ind+3)] = EH.corr[(i1+3):(ind+3)]+EH.corr[(i1+3):(ind+3)]/sum(EH
 # 71 on Jan 14
 EH.corr[(i1+4):(ind+4)] = EH.corr[(i1+4):(ind+4)]+EH.corr[(i1+4):(ind+3)]/sum(EH.corr[(i1+4):(ind+4)])*71
 
+# Corrections for PCR changes
 CH.corr = data$CH + corr*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
 WH.corr = data$WH + corr*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
 LG.corr = data$LG + corr*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
 NL.corr = EH.corr + CH.corr + WH.corr + LG.corr
+
+# Corrected data for plotting
 data2.corr = data.frame(date = data$date, EH = EH.corr, NL = NL.corr, WH= WH.corr, LG = LG.corr, CH = CH.corr) 
 data3.corr = data.frame(date = rep(data$date,5), cases = 100000*c(EH.corr/317664, CH.corr/91201, WH.corr/76608, LG.corr/36069,(EH.corr+CH.corr+WH.corr+LG.corr)/(317664+91201+76608+36069)), RHA = rep(c("Eastern", "Central", "Western", "Labrador-Grenfell", "Newfoundland & Labrador"), each=L))
 
 
+# Doubling time and halving time functions. If the first value of the result is negative, you need to change
+# from calling HT() or DT() to the other one.
+
+# Window of days over which to calculate the DT or HT.
 T<-7
 DT = function(){
 mod = nls(val ~ a*exp(r*seq(1,T)), 
                start = list(a = 100, r = 0.2))
+# The code below was slow, so I commented it out.
 #CI = confint(mod, level=0.95)
 #CI.lower = max(CI[2,1],0)
 #CI.upper = CI[2,2]
@@ -133,6 +155,7 @@ return(c(DT,p))
 HT = function(){
 mod = nls(val ~ a*exp(-r*seq(1,T)), 
                start = list(a = 300, r = 0.2))
+## The code below was slow so I commented it out
 #CI = confint(mod, level=0.95)
 #CI.lower = max(CI[2,1],0)
 #CI.upper = CI[2,2]
@@ -143,7 +166,9 @@ p = unname(p1[2])
 return(c(DT,p))
 }
 
-val <- head(tail(EH.corr,(T+6)),-6)
+# For EH it is quite likely there are tests that have been sent out-of-province
+# that have yet to be redistributed so I don't consider the last 3 days of data.
+val <- head(tail(EH.corr,(T+3)),-3)
 DT.eastern = HT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
@@ -152,7 +177,8 @@ val <- tail(WH.corr,T)
 DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = HT()
-val <- head(tail(NL.corr,(T+6)),-6)
+# See comments for EH
+val <- head(tail(NL.corr,(T+3)),-3)
 DT.NL = HT()
 ```
 
@@ -171,9 +197,7 @@ The data begins on December 15, 2021, when the [first Omicron case](http://ntv.c
 </div>
 
 ## Data limitations
-On January 12, Dr. Rahman presented the provincial modelling. Several of the graphs provided considered specimen date, rather than report date, and these data represent a more accurate representation of the COVID-19 outbreak in NL.
-
-This report considers only report date, as specimen dates are not reported in the public service advisories.
+On January 12, Dr. Rahman presented the provincial modelling. Some of Dr. Rahman's graphs considered [specimen date](https://twitter.com/PeterCBC/status/1481323100163784708) rather than report date. These data, by specimen date, are a more accurate representation of the COVID-19 outbreak in NL. This website considers only report date as specimen dates are not reported in the Public Service Advisories.
 
 ## Testing
 
@@ -192,13 +216,15 @@ $a_2=$ `r a2` tests per case 3 days prior (after January 3)
 
 $b=$ `r b` tests per person in NL.
 
-Since $a_2 > a_1$ this means that more tests per case have been performed after the change to recommendations for who should get PCR tested. We conclude that the change in recommendations for PCR testing did not affect the PCR testing rate before and after January 3rd.
+This suggests that after January 3rd, `r a1 - a2` fewer tests were performed per case because symptomatic contacts of cases did not get tested.
 
-### Correcting for the PCR testing changes and out-of-province test results
+### Adjusted cases: correcting for the PCR testing changes and out-of-province test results
 
 To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these test that did not occur would have been positive. We use this correction so that reported cases can be compared before and after January 6. 
 
 [On January 10, 2022, NL reported 680 cases](https://www.gov.nl.ca/releases/2022/health/0110n04/) arising from tests sent out of province December 29 to January 6th. The numbers from the [Public Service Announcement](https://www.gov.nl.ca/releases/2022/health/0110n04/) suggest that all 680 cases were in Eastern Health. To correct the case data these 680 cases are distributed in Eastern Health in proportion to the number of reported cases on each day December 29 to January 6th. The addition of these cases is after the correction for the PCR testing change.
+
+Cases from out-of-province testing have also been reported on the days after January 10. These cases are redistributed similarly, where the January 11 cases are distributed from December 30 to January 7th, and January 12th cases are distributed from December 31 to January 8th, and so forth.
 
 All subsequent calculations are performed on the adjusted data.
 
@@ -275,7 +301,7 @@ g.EH+g.CH
 g.WH+g.LG
 ```
 
-**Figure 1.** The adjustment for the PCR testing change and out-of-province reporting (line) and reported cases (dots). We assume a 3 day lag for test results such that the January 3 testing change first affects the data on January 6. All 680 cases reported from out-of-province testing on January 10 are assigned to Eastern Health from December 29 to January 6 in proportion to the cases from this date range.
+**Figure 1.** The adjustment for the PCR testing change and out-of-province reporting (line) and reported cases (dots).
 
 ```{r,echo=F}
 g1
@@ -287,6 +313,8 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'At peak'.
 
+Due to assumed pending test results that have been sent out-of-province for Eastern Health and Labrador, we exclude the last 3 days from calculations of doubling/halving time.
+
 **Newfoundland and Labrador: At peak** 
 
 **Eastern Health: At peak** 
@@ -297,19 +325,20 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 **Labrador-Grenfell Health: At peak**
 
-Fitting is performed using nonlinear least squares and considers the data corrected for the changes in PCR testing announced on [January 3](https://www.gov.nl.ca/releases/2022/health/0103n02/).
+Fitting is performed using nonlinear least squares and considers the adjusted data.
 
 ```{r, include=F, warning=FALSE}
  
 # Assume 3 days hospitalized. Admissions - discharges
 # Hospitalized within 14 days of specimen, take 7 as mean.
 d = 3
+# Cases per hospitlation/death
 UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 1.2*ONh
-NLm = .1*ONm
+NLh = 1.3*ONh
+NLm = 0.4*UKm
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 UK.rate[7:L] = UK.rate[7:L] - UK.rate[1:(L-6)]
