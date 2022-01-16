@@ -318,15 +318,15 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 Due to assumed pending test results that have been sent out-of-province for Eastern Health and Labrador, we exclude the last 3 days from calculations of doubling/halving time.
 
-**Newfoundland and Labrador: Declining with a halving time of `r DT.NL[1]` days** 
+**Newfoundland and Labrador: level** 
 
 **Eastern Health: level** 
 
-**Central Health: Declining with a halving time of `r DT.central[1]` days** 
+**Central Health: level** 
 
-**Western Health: level** 
+**Western Health: Declining with a halving time of `r DT.western[1]` days** 
 
-**Labrador-Grenfell Health: level**
+**Labrador-Grenfell Health: Declining with a halving time of `r DT.labrador[1]` days**
 
 Fitting is performed using nonlinear least squares and considers the adjusted data.
 
@@ -340,7 +340,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 1.3*ONh
+NLh = 1.1*ONh
 NLm = 0.4*UKm
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
