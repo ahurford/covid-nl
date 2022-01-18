@@ -318,11 +318,11 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 Due to assumed pending test results that have been sent out-of-province for Eastern Health and Labrador, we exclude the last 3 days from calculations of doubling/halving time.
 
-**Newfoundland and Labrador: Plateau** 
+**Newfoundland and Labrador: level** 
 
 **Eastern Health: level** 
 
-**Central Health: Plateau** 
+**Central Health: level** 
 
 **Western Health: Declining with a halving time of `r DT.western[1]` days** 
 
