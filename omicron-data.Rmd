@@ -169,10 +169,9 @@ p = unname(p1[2])
 return(c(DT,p))
 }
 
-# For EH it is quite likely there are tests that have been sent out-of-province
-# that have yet to be redistributed so I don't consider the last 3 days of data.
-val <- head(tail(EH.corr,(T+3)),-3)
-DT.eastern = DT()
+
+val <-tail(EH.corr,T)
+DT.eastern = HT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = HT()
@@ -180,8 +179,7 @@ val <- tail(WH.corr,T)
 DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = HT()
-# See comments for EH
-val <- head(tail(NL.corr,(T+3)),-3)
+val <- tail(NL.corr,T)
 DT.NL = HT()
 ```
 
@@ -316,15 +314,13 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'level'.
 
-Due to assumed pending test results that have been sent out-of-province for Eastern Health and Labrador, we exclude the last 3 days from calculations of doubling/halving time.
-
-**Newfoundland and Labrador: level** 
+**Newfoundland and Labrador: Declining with a halving time of `r DT.NL[1]` days** 
 
 **Eastern Health: level** 
 
 **Central Health: level** 
 
-**Western Health: Declining with a halving time of `r DT.western[1]` days** 
+**Western Health: level** 
 
 **Labrador-Grenfell Health: Declining with a halving time of `r DT.labrador[1]` days**
 
@@ -340,7 +336,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 1.1*ONh
+NLh = 0.9*ONh
 NLm = 0.4*UKm
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
