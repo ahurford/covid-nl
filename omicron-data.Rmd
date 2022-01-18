@@ -172,7 +172,7 @@ return(c(DT,p))
 # For EH it is quite likely there are tests that have been sent out-of-province
 # that have yet to be redistributed so I don't consider the last 3 days of data.
 val <- head(tail(EH.corr,(T+3)),-3)
-DT.eastern = HT()
+DT.eastern = DT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = HT()
@@ -318,11 +318,11 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 Due to assumed pending test results that have been sent out-of-province for Eastern Health and Labrador, we exclude the last 3 days from calculations of doubling/halving time.
 
-**Newfoundland and Labrador: level** 
+**Newfoundland and Labrador: Plateau** 
 
 **Eastern Health: level** 
 
-**Central Health: level** 
+**Central Health: Plateau** 
 
 **Western Health: Declining with a halving time of `r DT.western[1]` days** 
 
