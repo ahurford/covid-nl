@@ -329,24 +329,27 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 ```{r, include=F, warning=FALSE}
  
 # Assume 3 days hospitalized. Admissions - discharges
-# Hospitalized within 14 days of specimen, take 7 as mean.
-d = 3
+d = 4
+# Assume hospitalizations are lagged by 9 days
+lagh = 10
 # Cases per hospitlation/death
 UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 0.9*ONh
+NLh = 0.8*UKh
 NLm = 0.4*UKm
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
-UK.rate[7:L] = UK.rate[7:L] - UK.rate[1:(L-6)]
+# Is assuming d days in hospital
+# admissions - discharges. Discharges = admits d days ago
+UK.rate[d:L] = UK.rate[d:L] - UK.rate[1:(L-(d-1))]
 ON.rate = NL.corr/ONh
 ON.rate = cumsum(ON.rate)
-ON.rate[7:L] = ON.rate[7:L] - ON.rate[1:(L-6)]
+ON.rate[d:L] = ON.rate[d:L] - ON.rate[1:(L-(d-1))]
 NL.rate = NL.corr/NLh 
 NL.rate = cumsum(NL.rate)
-NL.rate[7:L] = NL.rate[7:L] - NL.rate[1:(L-6)]
+NL.rate[d:L] = NL.rate[d:L] - NL.rate[1:(L-(d-1))]
 
 UK.rate.ad = cumsum(NL.corr)/UKh
 ON.rate.ad = cumsum(NL.corr)/ONh
@@ -356,11 +359,13 @@ NL.rate.ad = cumsum(NL.corr)/NLh
 UK.rate.m = cumsum(NL.corr)/UKm
 ON.rate.m = cumsum(NL.corr)/ONm
 NL.rate.m = cumsum(NL.corr)/NLm
-future.dates = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 8, by = "days"),-1)
-days2 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-7),future.dates)
+# days into the future
+fend = 15
+future.dates = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = fend, by = "days"),-1)
+days2 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-lagh),head(future.dates, lagh))
 future.dates.5 = tail(seq(from=as.Date(data$date[L], format = "%Y-%m-%d"), length.out = 6, by = "days"),-1)
 days3 = c(tail(as.Date(data$date, format = "%Y-%m-%d"),-5),future.dates.5)
-NL.hosp = c(tail(NL.data$cum.hospital,-7), rep(NA,7))
+NL.hosp = c(tail(NL.data$cum.hospital,-lagh), rep(NA,lagh))
 NL.mort = c(tail(NL.data$cum.mort,-5), rep(NA,5))
 data2 = data.frame(dates = rep(days2,3), occupancy = c(ON.rate,UK.rate,NL.rate), location = rep(c("ON", "UK", "NL"), each = L))
 data3 = data.frame(dates = rep(days3,3), mortality = c(ON.rate.m, UK.rate.m,NL.rate.m), location = rep(c("ON", "UK", "NL"), each = length(days3)))
@@ -412,7 +417,7 @@ The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital
 g2
 ```
 
-**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged 7 days from cases and the length of stay in hospital is 6 days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider the adjusted case data.
+**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged `r lagh` days from cases and the length of stay in hospital is `r d` days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider the adjusted case data.
 
 <!-- ```{r, echo=FALSE,warning=FALSE} -->
 <!-- g2b -->
