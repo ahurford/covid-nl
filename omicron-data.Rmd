@@ -329,7 +329,7 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 ```{r, include=F, warning=FALSE}
  
 # Assume 3 days hospitalized. Admissions - discharges
-d = 6
+d = 5
 # Assume hospitalizations are lagged by 9 days
 lagh = 10
 # Cases per hospitlation/death
@@ -337,7 +337,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 1.1*UKh
+NLh = 0.8*UKh
 NLm = 0.37*UKm
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
@@ -417,7 +417,7 @@ The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital
 g2
 ```
 
-**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged `r lagh` days from cases and the length of stay in hospital is `r d` days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider the adjusted case data.
+**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged `r lagh` days from cases and the length of stay in hospital is `r d` days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider the adjusted case data. Note that the ranking of hospitalization rates is sensitive to the assumed average length of stay in hospital. We are not aware of a reported value for the average length of stay in hospital for Newfoundland and Labrador during the Omicron wave.
 
 <!-- ```{r, echo=FALSE,warning=FALSE} -->
 <!-- g2b -->
