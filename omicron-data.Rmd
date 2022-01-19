@@ -314,7 +314,7 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'level'.
 
-**Newfoundland and Labrador: Declining with a halving time of `r DT.NL[1]` days** 
+**Newfoundland and Labrador: level** 
 
 **Eastern Health: level** 
 
@@ -329,7 +329,7 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 ```{r, include=F, warning=FALSE}
  
 # Assume 3 days hospitalized. Admissions - discharges
-d = 4
+d = 6
 # Assume hospitalizations are lagged by 9 days
 lagh = 10
 # Cases per hospitlation/death
@@ -337,8 +337,8 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 0.8*UKh
-NLm = 0.4*UKm
+NLh = 1.1*UKh
+NLm = 0.37*UKm
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 # Is assuming d days in hospital
