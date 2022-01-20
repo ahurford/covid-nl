@@ -174,9 +174,9 @@ val <-tail(EH.corr,T)
 DT.eastern = HT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
-DT.central = DT()
+DT.central = HT()
 val <- tail(WH.corr,T)
-DT.western = DT()
+DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = HT()
 val <- tail(NL.corr,T)
@@ -331,14 +331,23 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 # Assume 3 days hospitalized. Admissions - discharges
 d = 5
 # Assume hospitalizations are lagged by 9 days
+<<<<<<< HEAD
 lagh = 12 #10
+=======
+lagh = 12
+>>>>>>> 3538f3906fc9c4ce4a0167266c9055a331c4fc89
 # Cases per hospitlation/death
 UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
+<<<<<<< HEAD
 NLh = 0.7*UKh  #0.8
 NLm = 0.33*UKm  #0.37
+=======
+NLh = 0.7*UKh
+NLm = 0.35*UKm
+>>>>>>> 3538f3906fc9c4ce4a0167266c9055a331c4fc89
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 # Is assuming d days in hospital
