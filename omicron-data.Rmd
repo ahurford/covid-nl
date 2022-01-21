@@ -176,7 +176,7 @@ print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = DT()
 val <- tail(WH.corr,T)
-DT.western = DT()
+DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = HT()
 val <- tail(NL.corr,T)
@@ -322,7 +322,7 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 **Western Health: level** 
 
-**Labrador-Grenfell Health: Declining with a halving time of `r DT.labrador[1]` days**
+**Labrador-Grenfell Health: level**
 
 Fitting is performed using nonlinear least squares and considers the adjusted data.
 
