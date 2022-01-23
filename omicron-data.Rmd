@@ -338,7 +338,7 @@ UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
 NLh = 0.7*UKh  #0.8
-NLm = 0.33*UKm  #0.37
+NLm = 0.36*UKm  #0.37
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 # Is assuming d days in hospital
