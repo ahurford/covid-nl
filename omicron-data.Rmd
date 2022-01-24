@@ -86,14 +86,15 @@ L = length(cases3)
 ind = which(dd3 == "2022-01-03")
 ind2 = which(dd3 == "2022-01-07") # Excludes Jan 10 which was abnormally high day for tests > 7000.
 # The above will need to be modified if testing to notification lag is different
+popn = rep((317664+91201+76608+36069),L)
 cases1 = c(cases3[1:ind], rep(0,(L-ind)))
 cases2 = c(rep(0,ind), cases3[(ind+1):L])
-popn = rep((317664+91201+76608+36069),L)
-popn = popn[-(ind2:L)]
-test3 = test3[-(ind2:L)]
-cases2 = cases2[-(ind2:L)]
-cases1 = cases1[-(ind2:L)]
-mod = lm(test3 ~ cases1 + cases2 + popn + 0)
+
+#popn = popn[-(ind2)]
+#test3 = test3[-(ind2)]
+#cases2 = cases2[-(ind2)]
+#cases1 = cases1[-(ind2)]
+mod = lm(test3 ~ cases1 + cases2 + popn +0)
 
 a1 = round(unname(coef(mod)[1]),2)
 a2 = round(unname(coef(mod)[2]),2)
@@ -219,6 +220,8 @@ $b=$ `r b` tests per person in NL.
 
 This suggests that after January 3rd, `r a1 - a2` fewer tests were performed per case because symptomatic contacts of cases did not get tested.
 
+This statistical model has poor fit and there are better sources of data than the [Public Service Annoucements](https://www.gov.nl.ca/releases/covid-19-news/). Because the adjustment for changes to PCR testing are important, future updates will include a more thorough analysis of the testing data including visualization of the fit.
+
 ### Adjusted cases: correcting for the PCR testing changes and out-of-province test results
 
 To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these tests that did not occur would have been positive. We use this adjustment so that reported cases can be compared before and after January 6. 
@@ -328,8 +331,8 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 
 ```{r, include=F, warning=FALSE}
  
-# Assume 3 days hospitalized. Admissions - discharges
-d = 5
+# Assume d days hospitalized. Admissions - discharges
+d = 7
 # Assume hospitalizations are lagged by 9 days
 lagh = 12 #10
 # Cases per hospitlation/death
@@ -337,8 +340,8 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 0.7*UKh  #0.8
-NLm = 0.36*UKm  #0.37
+NLh = 0.95*ONh  #0.8
+NLm = 0.5*UKm  #0.37
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 # Is assuming d days in hospital
@@ -417,7 +420,7 @@ The UKHSA study reports for confirmed Omicron cases: 198,348 cases, 815 hospital
 g2
 ```
 
-**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged `r lagh` days from cases and the length of stay in hospital is `r d` days ([BC Modelling Report, January 6, 2022](https://bccovid-19group.ca/post/2022-01-06-report/COVID19group-2022-01-06.pdf)). Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider the adjusted case data. Note that the ranking of hospitalization rates is sensitive to the assumed average length of stay in hospital. We are not aware of a reported value for the average length of stay in hospital for Newfoundland and Labrador during the Omicron wave.
+**Figure 3.** The black dots and lines are the number of people in hospital as reported by the NL [Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/). We assume hospitalizations are lagged `r lagh` days from cases and the length of stay in hospital is `r d` days. Hospital occupancy when assuming the reported proportion of hospitalizations for Omicron cases in the UKHSA (blue) and PHO (green) studies. The calibration to the NL data (red) assumes `r round(100/NLh,2)`% of reported cases are hospitalized. These calculations consider the adjusted case data. Note that the ranking of hospitalization rates is sensitive to the assumed average length of stay in hospital. We are not aware of a reported value for the average length of stay in hospital for Newfoundland and Labrador during the Omicron wave.
 
 <!-- ```{r, echo=FALSE,warning=FALSE} -->
 <!-- g2b -->
