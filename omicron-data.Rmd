@@ -171,16 +171,16 @@ return(c(DT,p))
 
 
 val <-tail(EH.corr,T)
-DT.eastern = HT()
+DT.eastern = DT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = DT()
 val <- tail(WH.corr,T)
 DT.western = HT()
 val <- tail(LG.corr,T)
-DT.labrador = HT()
+DT.labrador = DT()
 val <- tail(NL.corr,T)
-DT.NL = HT()
+DT.NL = DT()
 ```
 
 <div class="alert alert-info">
