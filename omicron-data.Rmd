@@ -94,7 +94,7 @@ cases2 = c(rep(0,ind), cases3[(ind+1):L])
 #test3 = test3[-(ind2)]
 #cases2 = cases2[-(ind2)]
 #cases1 = cases1[-(ind2)]
-mod = lm(test3 ~ cases1 + cases2 + popn +0)
+mod = lm(test3 ~ cases1 + cases2 + popn + 0)
 
 a1 = round(unname(coef(mod)[1]),2)
 a2 = round(unname(coef(mod)[2]),2)
@@ -109,28 +109,70 @@ data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, dat
 ## Correcting the data for the change in PCR testing on Jan 3 & distributing the test results for the
 ## out-of-province reporting across a range of days.
 corr = a1-a2
+corr.low = 0.5
+corr.high = 2.5
 ind = min(which(data3$date=="2022-01-06"))
 # PCR tsting change to EH
 EH.corr = data$EH + corr*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
+EH.corr.low = data$EH + corr.low*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
+EH.corr.high = data$EH + corr.high*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
+
 # Re-distributing the cases reported on Jan 10, which were collected Dec 29 to 
 i1=min(which(data3$date == "2021-12-29"))
 EH.corr[i1:ind] = EH.corr[i1:ind]+EH.corr[i1:ind]/sum(EH.corr[i1:ind])*680
+EH.corr.low[i1:ind] = EH.corr.low[i1:ind]+EH.corr.low[i1:ind]/sum(EH.corr.low[i1:ind])*680
+EH.corr.high[i1:ind] = EH.corr.high[i1:ind]+EH.corr.high[i1:ind]/sum(EH.corr.high[i1:ind])*680
+
 #323 on Dec 11
 EH.corr[(i1+1):(ind+1)] = EH.corr[(i1+1):(ind+1)]+EH.corr[(i1+1):(ind+1)]/sum(EH.corr[(i1+1):(ind+1)])*323
+
+EH.corr.low[(i1+1):(ind+1)] = EH.corr.low[(i1+1):(ind+1)]+EH.corr.low[(i1+1):(ind+1)]/sum(EH.corr.low[(i1+1):(ind+1)])*323
+
+EH.corr.high[(i1+1):(ind+1)] = EH.corr.high[(i1+1):(ind+1)]+EH.corr.high[(i1+1):(ind+1)]/sum(EH.corr.high[(i1+1):(ind+1)])*323
+
 #229 on Dec 12
 EH.corr[(i1+2):(ind+2)] = EH.corr[(i1+2):(ind+2)]+EH.corr[(i1+2):(ind+2)]/sum(EH.corr[(i1+2):(ind+2)])*229
+
+EH.corr.low[(i1+2):(ind+2)]+EH.corr.low[(i1+2):(ind+2)]/sum(EH.corr.low[(i1+2):(ind+2)])*229
+EH.corr.high[(i1+2):(ind+2)]+EH.corr.high[(i1+2):(ind+2)]/sum(EH.corr.high[(i1+2):(ind+2)])*229
+
 #166 on Dec 13
 EH.corr[(i1+3):(ind+3)] = EH.corr[(i1+3):(ind+3)]+EH.corr[(i1+3):(ind+3)]/sum(EH.corr[(i1+3):(ind+3)])*166
+
+EH.corr.low[(i1+3):(ind+3)] = EH.corr.low[(i1+3):(ind+3)]+EH.corr.low[(i1+3):(ind+3)]/sum(EH.corr.low[(i1+3):(ind+3)])*166
+
+EH.corr.high[(i1+3):(ind+3)] = EH.corr.high[(i1+3):(ind+3)]+EH.corr.high[(i1+3):(ind+3)]/sum(EH.corr.high[(i1+3):(ind+3)])*166
+
 # 71 on Jan 14
 EH.corr[(i1+4):(ind+4)] = EH.corr[(i1+4):(ind+4)]+EH.corr[(i1+4):(ind+4)]/sum(EH.corr[(i1+4):(ind+4)])*71
+
+EH.corr.low[(i1+4):(ind+4)] = EH.corr.low[(i1+4):(ind+4)]+EH.corr.low[(i1+4):(ind+4)]/sum(EH.corr.low[(i1+4):(ind+4)])*71
+
+EH.corr.high[(i1+4):(ind+4)] = EH.corr.high[(i1+4):(ind+4)]+EH.corr.high[(i1+4):(ind+4)]/sum(EH.corr.high[(i1+4):(ind+4)])*71
+
 # 71 on Jan 15
 EH.corr[(i1+5):(ind+5)] = EH.corr[(i1+5):(ind+5)]+EH.corr[(i1+5):(ind+5)]/sum(EH.corr[(i1+5):(ind+5)])*3
 
+EH.corr.low[(i1+5):(ind+5)] = EH.corr.low[(i1+5):(ind+5)]+EH.corr.low[(i1+5):(ind+5)]/sum(EH.corr.low[(i1+5):(ind+5)])*3
+
+EH.corr.high[(i1+5):(ind+5)] = EH.corr.high[(i1+5):(ind+5)]+EH.corr.high[(i1+5):(ind+5)]/sum(EH.corr.high[(i1+5):(ind+5)])*3
+
 # Corrections for PCR changes
 CH.corr = data$CH + corr*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
+CH.corr.low = data$CH + corr.low*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
+CH.corr.high = data$CH + corr.high*c(rep(0,(ind-1)),data$CH[(ind-3):(L-3)])
+
 WH.corr = data$WH + corr*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
+WH.corr.low = data$WH + corr.low*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
+WH.corr.high = data$WH + corr.high*c(rep(0,(ind-1)),data$WH[(ind-3):(L-3)])
+
 LG.corr = data$LG + corr*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
+LG.corr.low = data$LG + corr.low*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
+LG.corr.high = data$LG + corr.high*c(rep(0,(ind-1)),data$LG[(ind-3):(L-3)])
+
 NL.corr = EH.corr + CH.corr + WH.corr + LG.corr
+NL.corr.low = EH.corr.low + CH.corr.low + WH.corr.low + LG.corr.low
+NL.corr.high = EH.corr.high + CH.corr.high + WH.corr.high + LG.corr.high
 
 # Corrected data for plotting
 data2.corr = data.frame(date = data$date, EH = EH.corr, NL = NL.corr, WH= WH.corr, LG = LG.corr, CH = CH.corr) 
@@ -220,11 +262,11 @@ $b=$ `r b` tests per person in NL.
 
 This suggests that after January 3rd, `r a1 - a2` fewer tests were performed per case because symptomatic contacts of cases did not get tested.
 
-This statistical model has poor fit and there are better sources of data than the [Public Service Annoucements](https://www.gov.nl.ca/releases/covid-19-news/). Because the adjustment for changes to PCR testing are important, future updates will include a more thorough analysis of the testing data including visualization of the fit.
+This statistical model has poor fit and there are better sources of data than the [Public Service Announcements](https://www.gov.nl.ca/releases/covid-19-news/). Because the adjustment for changes to PCR testing are important, future updates will include a more thorough analysis of the testing data including visualization of the fit.
 
 ### Adjusted cases: correcting for the PCR testing changes and out-of-province test results
 
-To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these tests that did not occur would have been positive. We use this adjustment so that reported cases can be compared before and after January 6. 
+To correct for the change in PCR testing recommendations (beginning January 3), we assume that beginning January 6th the reporting reflects `r a1-a2` fewer tests per case, and that all these tests that did not occur would have been positive. We use this adjustment so that reported cases can be compared before and after January 6. As the estimates of $a_1$ and $a_2$ are not significant, we also consider a low and high estimate of $a_1 - a_2$ (low: `r corr.low`, high: `r corr.high` fewer tests per case after Jan 3).
 
 [On January 10, 2022, NL reported 680 cases](https://www.gov.nl.ca/releases/2022/health/0110n04/) arising from tests sent out of province December 29 to January 6th. The numbers from the [Public Service Announcement](https://www.gov.nl.ca/releases/2022/health/0110n04/) suggest that all 680 cases were in Eastern Health. To correct the case data these 680 cases are distributed in Eastern Health in proportion to the number of reported cases on each day December 29 to January 6th. The addition of these cases is after the correction for the PCR testing change.
 
@@ -235,6 +277,13 @@ All subsequent calculations are performed on the adjusted data.
 ## Adjusted cases
 
 ```{r, echo=FALSE, warning = FALSE}
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+n = 5
+cols = gg_color_hue(n)
+
 g1=ggplot(data3.corr, aes(x=date, y=cases, group = RHA)) +
 geom_line(aes(color=RHA))+
   geom_point(aes(color=RHA))+
@@ -247,6 +296,7 @@ theme_classic()+
 
 g=ggplot() +
 geom_line(data=data2.corr, aes(x=as.Date(date), y=NL, group=1))+
+  geom_ribbon(aes(x=as.Date(data$date), ymin = NL.corr.low, ymax = NL.corr.high), alpha=0.3,fill = cols[4])+
 geom_point(aes(x=as.Date(data$date), y=data$EH+data$WH+data$CH+data$LG))+
   xlab("")+
   ylab("Reported and adjusted cases")+
@@ -257,6 +307,7 @@ theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
 
 g.EH=ggplot() +
+geom_ribbon(aes(x=as.Date(data$date), ymin=EH.corr.low, ymax=EH.corr.high),alpha = 0.3,fill=cols[2])+
 geom_line(data=data2.corr, aes(x=as.Date(date), y=EH, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$EH))+
   xlab("")+
@@ -268,6 +319,7 @@ theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
 
 g.CH=ggplot() +
+  geom_ribbon(aes(x=as.Date(data$date), ymin=CH.corr.low, ymax=CH.corr.high),alpha = 0.3,fill = cols[1])+
 geom_line(data=data2.corr, aes(x=as.Date(date), y=CH, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$CH))+
   xlab("")+
@@ -279,6 +331,7 @@ theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
 
 g.WH=ggplot() +
+  geom_ribbon(aes(x=as.Date(data$date), ymin=WH.corr.low, ymax=WH.corr.high),alpha = 0.3,fill = cols[5])+
 geom_line(data=data2.corr, aes(x=as.Date(date), y=WH, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$WH))+
   xlab("")+
@@ -290,6 +343,7 @@ theme_classic()+
   theme(axis.text.x = element_text(angle = 90),legend.title = element_blank())
 
 g.LG=ggplot() +
+  geom_ribbon(aes(x=as.Date(data$date), ymin=LG.corr.low, ymax=LG.corr.high),alpha = 0.3, fill = cols[3])+
 geom_line(data=data2.corr, aes(x=as.Date(date), y=LG, group=1))+
 geom_point(aes(x=as.Date(data$date), y=data$LG))+
   xlab("")+
@@ -305,7 +359,7 @@ g.EH+g.CH
 g.WH+g.LG
 ```
 
-**Figure 1.** The adjustment for the PCR testing change and out-of-province reporting (line) and reported cases (dots).
+**Figure 1.** The adjustment for the PCR testing change and out-of-province reporting (line) and reported cases (dots). The shaded regions span from `r corr.low` to `r corr.high` fewer tests per case after Jan 3.
 
 ```{r,echo=F}
 g1
