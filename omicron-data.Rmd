@@ -214,7 +214,7 @@ return(c(DT,p))
 
 
 val <-tail(EH.corr,T)
-DT.eastern = HT()
+DT.eastern = DT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = HT()
@@ -223,7 +223,7 @@ DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = DT()
 val <- tail(NL.corr,T)
-DT.NL = HT()
+DT.NL = DT()
 ```
 
 <div class="alert alert-info">
@@ -395,7 +395,7 @@ UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
 NLh = 0.95*ONh  #0.8
-NLm = 0.5*UKm  #0.37
+NLm = 0.45*UKm  #0.37
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 # Is assuming d days in hospital
