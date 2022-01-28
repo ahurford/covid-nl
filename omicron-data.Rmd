@@ -214,7 +214,7 @@ return(c(DT,p))
 
 
 val <-tail(EH.corr,T)
-DT.eastern = DT()
+DT.eastern = HT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = HT()
@@ -375,7 +375,7 @@ The doubling time is the days until the number of reported cases doubles (assumi
 
 **Eastern Health: level** 
 
-**Central Health: level** 
+**Central Health: Declining with a halving time of `r DT.central[1]` days** 
 
 **Western Health: level** 
 
@@ -388,7 +388,7 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 # Assume d days hospitalized. Admissions - discharges
 d = 7
 # Assume hospitalizations are lagged by 9 days
-lagh = 12 #10
+lagh = 11 #10
 # Cases per hospitlation/death
 UKh = (198348/815)
 UKm = (198348/57)
