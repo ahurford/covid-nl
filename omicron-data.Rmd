@@ -110,7 +110,7 @@ data3 = data.frame(date = rep(data$date,5), cases = 100000*c(data$EH/317664, dat
 ## out-of-province reporting across a range of days.
 corr = a1-a2
 corr.low = 0.5
-corr.high = 2.5
+corr.high = 3
 ind = min(which(data3$date=="2022-01-06"))
 # PCR tsting change to EH
 EH.corr = data$EH + corr*c(rep(0,(ind-1)),data$EH[(ind-3):(L-3)])
