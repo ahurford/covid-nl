@@ -98,7 +98,7 @@ mod = lm(test3 ~ cases1 + cases2 + popn + 0)
 
 a1 = round(unname(coef(mod)[1]),2)
 a2 = round(unname(coef(mod)[2]),2)
-b = round(unname(coef(mod)[3]),2)
+b = round(unname(coef(mod)[3]),3) #round 2
 
 ## Making a dataframe for plotting
 NL.data = data
@@ -394,7 +394,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 0.99*ONh  #0.8
+NLh = 0.85*ONh  #1.01
 NLm = 0.48*UKm  #0.37
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
