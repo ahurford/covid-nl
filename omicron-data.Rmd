@@ -219,7 +219,7 @@ print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = HT()
 val <- tail(WH.corr,T)
-DT.western = DT()
+DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = DT()
 val <- tail(NL.corr,T)
@@ -394,7 +394,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 0.85*ONh  #1.01
+NLh = 1.01*ONh  #.85
 NLm = 0.48*UKm  #0.37
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
