@@ -388,14 +388,14 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 # Assume d days hospitalized. Admissions - discharges
 d = 7
 # Assume hospitalizations are lagged by 9 days
-lagh = 12 #10
+lagh = 11 #10
 # Cases per hospitlation/death
 UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
 NLh = 1.01*ONh  #.85
-NLm = 0.48*UKm  #0.37
+NLm = 0.45*UKm  #0.37
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
 # Is assuming d days in hospital
