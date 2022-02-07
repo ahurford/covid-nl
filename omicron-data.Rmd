@@ -183,7 +183,7 @@ data3.corr = data.frame(date = rep(data$date,5), cases = 100000*c(EH.corr/317664
 # from calling HT() or DT() to the other one.
 
 # Window of days over which to calculate the DT or HT.
-T<-7
+T<-14
 DT = function(){
 mod = nls(val ~ a*exp(r*seq(1,T)), 
                start = list(a = 100, r = 0.2))
@@ -214,16 +214,16 @@ return(c(DT,p))
 
 
 val <-tail(EH.corr,T)
-DT.eastern = DT()
+DT.eastern = HT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
-DT.central = DT()
+DT.central = HT()
 val <- tail(WH.corr,T)
 DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = HT()
 val <- tail(NL.corr,T)
-DT.NL = DT()
+DT.NL = HT()
 ```
 
 <div class="alert alert-info">
@@ -371,15 +371,15 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'level'.
 
-**Newfoundland and Labrador: level** 
+**Newfoundland and Labrador:** decreasing with a halving time of `r DT.NL[1]` days
 
-**Eastern Health: level** 
+**Eastern Health:** decreasing with a halving time of `r DT.eastern[1]` days 
 
-**Central Health: level** 
+**Central Health:** decreasing with a halving time of `r DT.central[1]` days
 
-**Western Health: level** 
+**Western Health:** level
 
-**Labrador-Grenfell Health: level**
+**Labrador-Grenfell Health:** level
 
 Fitting is performed using nonlinear least squares and considers the adjusted data.
 
