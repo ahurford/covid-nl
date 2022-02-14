@@ -214,7 +214,7 @@ return(c(DT,p))
 
 
 val <-tail(EH.corr,T)
-DT.eastern = HT()
+DT.eastern = DT()
 print(DT.eastern)
 val <- tail(CH.corr,T)
 DT.central = HT()
@@ -223,7 +223,7 @@ DT.western = HT()
 val <- tail(LG.corr,T)
 DT.labrador = DT()
 val <- tail(NL.corr,T)
-DT.NL = HT()
+DT.NL = DT()
 ```
 
 <div class="alert alert-info">
@@ -371,13 +371,13 @@ g1
 
 The doubling time is the days until the number of reported cases doubles (assuming exponential growth). The halving time is the days until the number of reported cases halves (assuming exponential decay). Our doubling and halving time calculations consider the number of reported cases over the last `r T` days. If the exponential growth coefficient is not different from 0, the number of reported cases is stated as 'level'.
 
-**Newfoundland and Labrador:** decreasing with a halving time of `r DT.NL[1]` days
+**Newfoundland and Labrador:** level
 
-**Eastern Health:** decreasing with a halving time of `r DT.eastern[1]` days 
+**Eastern Health:** level
 
 **Central Health:** level
 
-**Western Health:** decreasing with a halving time of `r DT.western[1]` days 
+**Western Health:** level 
 
 **Labrador-Grenfell Health:** level
 
@@ -386,7 +386,7 @@ Fitting is performed using nonlinear least squares and considers the adjusted da
 ```{r, include=F, warning=FALSE}
  
 # Assume d days hospitalized. Admissions - discharges
-d = 7
+d = 8 #7 
 # Assume hospitalizations are lagged by 9 days
 lagh = 10 #10
 # Cases per hospitlation/death
@@ -394,7 +394,7 @@ UKh = (198348/815)
 UKm = (198348/57)
 ONh = (29594/75)
 ONm = (29594/3)
-NLh = 0.94*ONh  #.85
+NLh = .95*ONh  #.85
 NLm = 0.49*UKm  #0.37
 UK.rate = NL.corr/UKh
 UK.rate = cumsum(UK.rate)
