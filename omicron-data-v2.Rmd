@@ -193,10 +193,10 @@ gNL
 ```
 
 
-**Figure 1.** Recently, the percentage of tests that are positive, as reported by the provincial testing system, has been near its maximum value (grey line). In combination with relatively constant reported case counts, this suggests that there are more unreported cases in the community relative to early January (i.e., the separation between the blue line and the shaded area). Even with the recent high percentage of positive test results, total COVID-19 cases (both reported and unreported) are level. Positivity and case data are averaged over the last 14 days. All data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID).   
+**Figure 1.** Each of % positivity, total cases (reported and unreported), and reported cases are plotted relative to their maximum values, so that _trends_ can be compared. Recently, the percentage of tests that are positive, as reported by the provincial testing system, has been near its maximum value (grey line). In contrast, reported cases have been declining or level since early January (blue shaded). Even with the recent high percentage of positive test results, total COVID-19 cases (both reported and unreported) are level (blue solid line). Positivity and case data are averaged over the last 14 days. All data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID).   
 
 ```{r,echo=F}
 gE+gC+gW+gL
 ```
 
-**Figure 2.** Results are similar at the Regional Health Authority level. With a higher percentage of tests that are positive there are more unreported COVID-19 cases recently, however, total COVID-19 cases (both reported and unreported) are level or decreasing for all Regional Health Authorities. Methods and figure legend are as for Figure 1.
+**Figure 2.** Results are similar at the Regional Health Authority level. There have been some times when total COVID-19 cases (both reported and unreported, solid lines) have increased for some Regional Health Authorities when reported cases (shaded area) have not, but across the entire time period trends in reported and total (both reported and unreported) cases are similar. Methods and figure legend are as for Figure 1.
