@@ -199,4 +199,4 @@ gNL
 gE+gC+gW+gL
 ```
 
-**Figure 2.** Results are similar at the Regional Health Authority level. With a higher percentage of tests that are positive, there are more unreported COVID-19 cases recently, however, I do not find that total COVID-19 cases (both reported and unreported) are increasing in any Regional Health Authorities. Methods and figure legend are as for Figure 1.
+**Figure 2.** Results are similar at the Regional Health Authority level. With a higher percentage of tests that are positive there are more unreported COVID-19 cases recently, however, I do not find that total COVID-19 cases (both reported and unreported) are increasing in any Regional Health Authorities. Methods and figure legend are as for Figure 1.
