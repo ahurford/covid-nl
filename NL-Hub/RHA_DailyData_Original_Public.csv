@@ -1,4 +1,4 @@
-X,Y,objectid,globalid,prov,regional_health_authority,date_updated,total_number_of_cases,new_cases,currently_hospitalized,current_in_icu,total_number_recovered,total_number_of_deaths,active_cases,total_people_tested,Population,CasesPer10KPop,CreationDate,Creator,EditDate,Editor
+﻿X,Y,objectid,globalid,prov,regional_health_authority,date_updated,total_number_of_cases,new_cases,currently_hospitalized,current_in_icu,total_number_recovered,total_number_of_deaths,active_cases,total_people_tested,Population,CasesPer10KPop,CreationDate,Creator,EditDate,Editor
 ,,1,{2A599D1C-84B7-4AFC-BD10-92D29CA05E12},NL,Western_RHA,2020/03/25 18:30:00+00,1,1,0,0,0,0,1,0,7.414,0.134879956838414,2020/05/05 18:00:01+00,phearns,2020/05/05 18:05:26+00,phearns
 ,,2,{3BE7D707-CB17-43C4-AB86-CCA86928C28D},NL,western_rha,2020/03/26 17:29:59+00,1,0,0,0,0,0,1,0,7.414,0.134879956838414,2020/05/05 18:00:01+00,phearns,2020/12/10 11:52:28+00,phearns
 ,,3,{4CA17D2E-4D3F-4477-9020-9B1C6E4E7AE9},NL,western_rha,2020/03/27 17:15:00+00,1,0,0,0,1,0,0,0,7.414,0.134879956838414,2020/05/05 18:00:01+00,phearns,2020/12/10 11:52:28+00,phearns
@@ -2332,3 +2332,7 @@ X,Y,objectid,globalid,prov,regional_health_authority,date_updated,total_number_o
 0.0,0.0,2331,{9F50E4B6-99AF-4E56-908B-3B884E3B3E9E},NL,eastern_rha,2022/02/25 19:28:59+00,15258,276,9,0,13724,28,1495,340323,,,2022/02/25 19:36:42+00,andreweaton,2022/02/25 19:36:42+00,andreweaton
 0.0,0.0,2332,{C33767BB-982C-476B-8235-6FB0323FF8B7},NL,labradorgrenfell_rha,2022/02/25 19:30:00+00,2114,6,1,0,2066,1,45,24771,,,2022/02/25 19:36:42+00,andreweaton,2022/02/25 19:36:42+00,andreweaton
 0.0,0.0,2333,{65D066EE-67D2-4EDC-9CCA-5BB791EE22C7},NL,western_rha,2022/02/25 19:31:00+00,2611,48,5,3,2303,9,297,71938,,,2022/02/25 19:36:42+00,andreweaton,2022/02/25 19:36:42+00,andreweaton
+0.0,0.0,2334,{60A50938-A76D-44A3-8DDF-1F3B4C6725D3},NL,central_rha,2022/02/28 19:43:00+00,3291,17,5,2,2959,27,303,72483,,,2022/02/28 19:46:31+00,andreweaton,2022/02/28 19:46:31+00,andreweaton
+0.0,0.0,2335,{2D9AF8D0-67B2-49F5-B2A7-66B35C04521F},NL,eastern_rha,2022/02/28 19:44:00+00,15841,257,9,1,14249,29,1550,342821,,,2022/02/28 19:46:31+00,andreweaton,2022/02/28 19:46:31+00,andreweaton
+0.0,0.0,2336,{DC16613D-47D1-4FC5-8A15-7E9B9D4A9290},NL,labradorgrenfell_rha,2022/02/28 19:44:00+00,2177,28,1,0,2079,1,95,24860,,,2022/02/28 19:46:32+00,andreweaton,2022/02/28 19:46:32+00,andreweaton
+0.0,0.0,2337,{2D80C4CB-2283-4649-AD24-B8DCCF0FADAD},NL,western_rha,2022/02/28 19:44:59+00,2717,25,4,3,2418,9,257,72472,,,2022/02/28 19:46:32+00,andreweaton,2022/02/28 19:46:32+00,andreweaton

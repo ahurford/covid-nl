@@ -1,0 +1,202 @@
+---
+title: "COVID-19 in Newfoundland and Labrador"
+author: "Dr. Amy Hurford"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+fontsize: 11pt
+---
+[Memorial University of Newfoundland and Labrador,](https://www.mun.ca/math/)
+[Canadian Network for Modelling Infectious Disease,](https://canmod.net/)
+[Mathematics for Public Health,](http://www.fields.utoronto.ca/activities/public-health)
+[One Health Modelling Network for Emerging Infections](https://www.yorku.ca/science/cdm/2021/04/09/ccdm-network-to-model-emerging-infectious-diseases-receives-2-5-million-in-federal-funding/)
+
+```{r setup, include=FALSE}
+require(zoo)
+require(ggplot2)
+require(patchwork)
+gg_color_hue <- function(n){
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+n = 6
+cols = gg_color_hue(n)
+#data=read.csv("~/Desktop/RHA_DailyData_Original_Public.csv")
+data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL-Hub/RHA_DailyData_Original_Public.csv', fill=TRUE)
+data1<-data
+data2 = data.frame(date=as.Date(data$date_updated), cases = data$new_cases, tests = data$total_people_tested, RHA = data$regional_health_authority)
+data2 = data2[data2$date>"2021-12-10",]
+eastern = data2[data2$RHA=="eastern_rha",]
+western = data2[data2$RHA=="western_rha",]
+central = data2[data2$RHA=="central_rha",]
+labrador = data2[data2$RHA=="labradorgrenfell_rha",]
+
+row.names(eastern) <- NULL
+row.names(central)<-NULL
+row.names(western)<-NULL
+row.names(labrador)<-NULL
+
+# correct flaws in data
+eastern$tests[31] = eastern$tests[31]+eastern$tests[30]
+# repeated days or non-sensical test numbers
+eastern = eastern[-c(44,28,35),]
+western = western[-43,]
+central = central[-c(44,28),]
+labrador = labrador[-c(44,28),]
+
+smoothdata = function(){
+T = length(values[,1])
+difference <- c(1,as.double(difftime(values$date[2:T],values$date[1:(T-1)],units='days')))
+values$tests = diff(c(0,values$tests))/difference
+values$cases = values$cases/difference
+values = cbind(values,difference=difference)
+
+cases = NULL
+tests = NULL
+for(i in seq(1,(T-1))){
+  cases = c(cases,rep(values$cases[(i+1)],difference[(i+1)]))
+  tests = c(tests,rep(values$tests[(i+1)],difference[(i+1)]))
+}
+
+cases = tail(cases, -1)
+tests = tail(tests, -1)
+positivity = cases/tests
+positivity = positivity/max(positivity)
+dates = seq(as.Date("2021-12-15"), values$date[T], by="days")
+values = data.frame(dates=dates, cases=cases, tests=tests)
+
+# 14 day rolling mean:
+values.roll = data.frame(cases = rollmean(cases,14), tests = rollmean(tests,14))
+n=0.5
+undetected = popn.size*((values.roll$cases/popn.size)^n*(values.roll$cases/values.roll$tests)^(1-n))
+dates2 = seq(as.Date("2021-12-22"), length.out = length(undetected) , by="days")
+positivity = values.roll$cases/values.roll$tests
+print(positivity)
+positivity = 100*positivity/max(positivity)
+
+data = data.frame(dates2, tests = values.roll$tests, detected2 = values.roll$cases, all2 = undetected+values.roll$cases, detected = 100*values.roll$cases/max(values.roll$cases), all = 100*(undetected+values.roll$cases)/max(undetected+values.roll$cases), positivity = positivity)
+return(data)
+}
+
+values <- eastern
+popn.size <- 10000*data1[data1$regional_health_authority=="eastern_rha",]$Population[1]
+data = smoothdata()
+eastern = data
+
+gE=ggplot() +
+  geom_ribbon(data=data, aes(x=as.Date(dates2), ymax=detected, ymin=0),fill = cols[1], alpha = 0.3)+
+  geom_line(data=data,aes(x=as.Date(dates2), y=positivity),col = "grey")+
+  geom_line(data=data,aes(x=as.Date(dates2), y=all),lwd=2, col = cols[1])+
+  xlab("")+
+  ylab("% of maximum")+
+  ggtitle("Eastern Health")+
+  theme_classic()+
+  scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+##
+
+values <- central
+popn.size <- 10000*data1[data1$regional_health_authority=="central_rha",]$Population[1]
+data = smoothdata()
+central = data
+
+gC=ggplot() +
+  geom_ribbon(data=data, aes(x=as.Date(dates2), ymax=detected, ymin=0),fill = cols[2], alpha = 0.3)+
+  geom_line(data=data,aes(x=as.Date(dates2), y=positivity),col = "grey")+
+  geom_line(data=data,aes(x=as.Date(dates2), y=all),lwd=2, col = cols[2])+
+  xlab("")+
+  ylab("% of maximum")+
+  ggtitle("Central Health")+
+  theme_classic()+
+  scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+##
+
+values <- western
+popn.size <- 10000*data1[data1$regional_health_authority=="western_rha",]$Population[1]
+data = smoothdata()
+western = data
+
+gW=ggplot() +
+  geom_ribbon(data=data, aes(x=as.Date(dates2), ymax=detected, ymin=0),fill = cols[3], alpha = 0.3)+
+  geom_line(data=data,aes(x=as.Date(dates2), y=positivity),col="grey")+
+  geom_line(data=data, aes(x=as.Date(dates2), y=all),lwd=2, col = cols[3])+
+  xlab("")+
+  ylab("% of maximum")+
+  ggtitle("Western Health")+
+  theme_classic()+
+  scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+##
+
+values <- labrador
+popn.size <- 10000*data1[data1$regional_health_authority=="labradorgrenfell_rha",]$Population[1]
+data = smoothdata()
+labrador = data
+
+
+gL=ggplot() +
+  geom_ribbon(data=data, aes(x=as.Date(dates2), ymax=detected, ymin=0),fill = cols[4], alpha = 0.3)+
+  geom_line(data=data,aes(x=as.Date(dates2), y=positivity),col="grey")+
+  geom_line(data=data,aes(x=as.Date(dates2), y=all),lwd=2, col = cols[4])+
+  xlab("")+
+  ylab("% of maximum")+
+  ggtitle("Labrador-Grenfell Health")+
+  theme_classic()+
+  scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+##
+
+detected = eastern$detected2 + central$detected2 + western$detected2 + labrador$detected2
+detected = 100*detected/max(detected)
+
+all = eastern$all2 + central$all2 + western$all2 + labrador$all2
+all = 100*all/max(all)
+
+tests = eastern$tests + central$tests + western$tests + labrador$tests
+positivity = detected/tests
+positivity = 100*positivity/max(positivity)
+
+
+data = data.frame(dates2=labrador$dates2, detected = detected, all = all, positivity)
+
+gNL=ggplot() +
+  geom_ribbon(data=data, aes(x=as.Date(dates2), ymax=detected, ymin=0),fill = cols[5], alpha = 0.3)+
+  geom_line(data=data,aes(x=as.Date(dates2), y=positivity),col="grey")+
+  geom_line(data=data,aes(x=as.Date(dates2), y=all),lwd=2, col = cols[5])+
+  xlab("")+
+  ylab("% of maximum")+
+  ggtitle("Newfoundland and Labrador")+
+  annotate("text", x = as.Date("2022-02-10"), y = 90, label = "positivity", col="grey")+
+  annotate("text", x = as.Date("2022-02-07"), y = 60, label = "reported+unreported",fontface=2, col=cols[5])+
+  annotate("text", x = as.Date("2022-02-07"), y = 25, label = "reported", col=cols[5])+
+  theme_classic()+
+  scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+
+gNL
+gE+gC+gW+gL
+```
+
+
+<div class="alert alert-info">
+In February 2022, around 20$\%$ of tests reported by the Newfoundland and Labrador provincial PCR testing system have been positive results. _Could this high percentage of positive test results suggest that COVID-19 is increasing undetected in the Newfoundland and Labrador community?_
+
+[Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) found that the prevalence of unreported cases during the previous week is approximated as the geometric mean of the per capita reported cases and the percentage of tests that are positive, where these data are appropriately smoothed.
+
+I use the approximation of [Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) to estimate the number of unreported cases in Newfoundland and Labrador a week ago, and prior. I then compare the estimated total cases (both reported and unreported) with reported cases to determine if the trend in reported cases (increasing, decreasing, or level) is consistent with the trend in total cases.
+</div>
+
+```{r,echo=F}
+gNL
+```
+
+
+**Figure 1.** Recently, the percentage of tests that are positive, as reported by the provincial testing system, has been near its maximum value (grey line). This suggests that there are more unreported cases in the community relative to early January. I do not find that the recent high percentage of positive test results suggests that total COVID-19 cases (both reported and unreported) are increasing undetected in the community. Positivity and case data are averaged over the last 14 days. All data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID).   
+
+```{r,echo=F}
+gE+gC+gW+gL
+```
+
+**Figure 2.** Results are similar at the Regional Health Authority level. With a higher percentage of tests that are positive, there are more unreported COVID-19 cases recently, however, I do not find that total COVID-19 cases (both reported and unreported) are increasing in any Regional Health Authorities. Methods and figure legend are as for Figure 1.
