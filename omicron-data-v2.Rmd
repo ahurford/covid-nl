@@ -185,7 +185,7 @@ In February 2022, around 20$\%$ of tests reported by the Newfoundland and Labrad
 
 [Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) found that the prevalence of unreported cases during the previous week is approximated as the geometric mean of the per capita reported cases and the percentage of tests that are positive, where these data are appropriately smoothed.
 
-I use the approximation of [Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) to estimate the number of unreported cases in Newfoundland and Labrador a week ago, and prior. I then compare the estimated total cases with reported cases to determine if the trend in **reported cases** (increasing, decreasing, or level) is consistent with the trend in **total cases (both reported and unreported)**.
+I use the approximation of [Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) to estimate the number of unreported cases in Newfoundland and Labrador a week ago, and prior. I then compare the estimated total cases, with reported cases to determine if the trend in **reported cases** (increasing, decreasing, or level) is consistent with the trend in **total cases (both reported and unreported)**.
 </div>
 
 ```{r,echo=F}
@@ -193,10 +193,10 @@ gNL
 ```
 
 
-**Figure 1.** Recently, the percentage of tests that are positive, as reported by the provincial testing system, has been near its maximum value (grey line). This suggests that there are more unreported cases in the community relative to early January. I do not find that the recent high percentage of positive test results suggests that total COVID-19 cases (both reported and unreported) are increasing undetected in the community. Positivity and case data are averaged over the last 14 days. All data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID).   
+**Figure 1.** Recently, the percentage of tests that are positive, as reported by the provincial testing system, has been near its maximum value (grey line). In combination with relatively constant reported case counts, this suggests that there are more unreported cases in the community relative to early January (i.e., the separation between the blue line and the shaded area). Even with the recent high percentage of positive test results, total COVID-19 cases (both reported and unreported) are level. Positivity and case data are averaged over the last 14 days. All data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID).   
 
 ```{r,echo=F}
 gE+gC+gW+gL
 ```
 
-**Figure 2.** Results are similar at the Regional Health Authority level. With a higher percentage of tests that are positive there are more unreported COVID-19 cases recently, however, I do not find that total COVID-19 cases (both reported and unreported) are increasing in any Regional Health Authorities. Methods and figure legend are as for Figure 1.
+**Figure 2.** Results are similar at the Regional Health Authority level. With a higher percentage of tests that are positive there are more unreported COVID-19 cases recently, however, total COVID-19 cases (both reported and unreported) are level or decreasing for all Regional Health Authorities. Methods and figure legend are as for Figure 1.
