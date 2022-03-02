@@ -225,4 +225,4 @@ gE+gC+gW+gL
 gNL2
 ```
 
-**Figure 3.** Reported cases used for this analysis (last 14 days only). To account for days when cases and tests are not reported, the daily average is taken. The data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID).
+**Figure 3.** Reported cases used for this analysis (last 14 days only). To account for days when cases and tests are not reported, the daily average is taken. The data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID). 
