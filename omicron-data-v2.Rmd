@@ -16,6 +16,7 @@ fontsize: 11pt
 require(zoo)
 require(ggplot2)
 require(patchwork)
+require(dplyr)
 gg_color_hue <- function(n){
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
@@ -51,7 +52,7 @@ T = length(values[,1])
 difference <- c(1,as.double(difftime(values$date[2:T],values$date[1:(T-1)],units='days')))
 # Cases per day since last reporting
 values$tests = diff(c(0,values$tests))/difference
-values$cases = values$cases/difference
+values$cases = values$cases
 values = cbind(values,difference=difference,positivity=values$cases/values$tests)
 dates = seq(as.Date("2021-12-14"), values$date[T], by="days")
 
@@ -80,8 +81,9 @@ undetected = popn.size*((values.roll$cases/popn.size)^n*(values.roll$positivity)
 
 cases.raw = values$cases
 test.raw = values$tests
-
-data = data.frame(dates2 = tail(dates,-1), tests.roll = c(rep(NA,13),values.roll$tests), detected.roll = c(rep(NA,13),values.roll$cases), all = c(rep(NA,7),undetected+values.roll$cases, rep(NA,6)), cases.raw = cases.raw, test.raw = test.raw, positivity.roll = c(rep(NA,13),values.roll$positivity))
+active = rollsumr(values.roll$cases, k = 7, fill = NA)
+active[1:6] = cumsum(values.roll$cases[1:6])
+data = data.frame(dates2 = tail(dates,-1), tests.roll = c(rep(NA,13),values.roll$tests), detected.roll = c(rep(NA,13),values.roll$cases), all = c(rep(NA,7),undetected+active, rep(NA,6)), cases.raw = cases.raw, test.raw = test.raw, positivity.roll = c(rep(NA,13),values.roll$positivity))
 return(data)
 }
 
@@ -161,12 +163,43 @@ gL=ggplot() +
   theme(axis.text.x = element_text(angle = 90),legend.position = "none")
 ##
 
-cases.raw = eastern$cases.raw + western$cases.raw + central$cases.raw + labrador$cases.raw
-test.raw = eastern$test.raw + western$test.raw + central$test.raw + labrador$test.raw
-all = eastern$all + western$all + central$all + labrador$all
-positivity.roll = c(rep(NA,13),rollmean(cases.raw/test.raw, 14))
-detected.roll = c(rep(NA,13),rollmean(cases.raw, 14))
-data = data.frame(dates2 = labrador$dates2, cases.raw=cases.raw, detected.roll = detected.roll, all = all, positivity.roll = positivity.roll)
+## NL totals from Data hub 
+cases.raw.hub = eastern$cases.raw + western$cases.raw + central$cases.raw + labrador$cases.raw
+test.raw.hub = eastern$test.raw + western$test.raw + central$test.raw + labrador$test.raw
+all.hub = eastern$all + western$all + central$all + labrador$all
+positivity.roll.hub = c(rep(NA,13),rollmean(cases.raw.hub/test.raw.hub, 14))
+detected.roll.hub = c(rep(NA,13),rollmean(cases.raw.hub, 14))
+
+# Load data from PSAs
+NL <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL.csv', fill=TRUE)
+NL.tests <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/Test_NL(twosources).csv', fill=TRUE)
+NL.tests$date <- format(as.Date(NL.tests$date, format="%m/%d/%Y"), "%Y-%m-%d")
+
+NL.tests <- NL.tests %>% filter(!is.na(total.test))
+T = length(NL.tests[,1])
+difference <- c(1,as.double(difftime(NL.tests$date[2:T],NL.tests$date[1:(T-1)],units='days')))
+tests1 <- diff(c(0,NL.tests$total.test))/difference
+# Fill for missing dates
+tests=NULL
+for(i in seq(1,(T))){
+  tests = c(tests,rep(tests1[(i)],difference[(i)]))
+}
+tests = cumsum(tests)
+T = length(NL[,1])
+difference <- c(1,as.double(difftime(NL$date[2:T],NL$date[1:(T-1)],units='days')))
+# Fill for missing dates
+cases=NULL
+for(i in seq(1,(T))){
+  cases = c(cases,rep(NL$total[(i)],difference[(i)]))
+}
+dates = seq(as.Date("2021-12-13"), as.Date(NL$date[T]), by="days")
+NL = data.frame(date=dates, cases=cases, tests=tests)
+values <- NL
+popn.size <- 10000*(data1[data1$regional_health_authority=="labradorgrenfell_rha",]$Population[1]+data1[data1$regional_health_authority=="central_rha",]$Population[1]+data1[data1$regional_health_authority=="western_rha",]$Population[1]+data1[data1$regional_health_authority=="eastern_rha",]$Population[1])
+data = smoothdata()
+NL = data
+
+data = cbind(data, detected.roll.hub = detected.roll.hub, all.hub = all.hub, positivity.roll.hub = positivity.roll.hub, cases.raw.hub=cases.raw.hub)
 
 
 gNL=ggplot() +
@@ -178,21 +211,36 @@ gNL=ggplot() +
   xlab("")+
   ylab("% of maximum")+
   ggtitle("Newfoundland and Labrador")+
-  annotate("text", x = as.Date("2022-02-26"), y = 95, label = "positivity", col="grey")+
-  annotate("text", x = as.Date("2022-02-20"), y = 45, label = "reported+unreported cases",fontface=2, col=cols[5])+
-  annotate("text", x = as.Date("2022-02-24"), y = 32, label = "reported cases", col=cols[5])+
+  annotate("text", x = as.Date("2022-03-02"), y = 89, label = "positivity", col="grey")+
+  annotate("text", x = as.Date("2022-02-18"), y = 60, label = "total active cases",fontface=2, col=cols[5])+
+  annotate("text", x = as.Date("2022-02-24"), y = 35, label = "reported new cases", col=cols[5])+
   theme_classic()+
   scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
   theme(axis.text.x = element_text(angle = 90),legend.position = "none")
 
 gNL2=ggplot() +
- geom_point(data=tail(data,14), aes(x=as.Date(dates2), y=cases.raw), col = cols[5])+
-  geom_line(data=tail(data,14), aes(x=as.Date(dates2), y=cases.raw), col = cols[5])+
+  geom_line(data=data, aes(x=as.Date(dates2), y=detected.roll.hub), col = cols[5], lty=2)+
+  geom_point(data=data, aes(x=as.Date(dates2), y=cases.raw.hub), col = cols[5], pch=2)+
+  geom_point(data=data, aes(x=as.Date(dates2), y=cases.raw), col = cols[5])+
+  geom_line(data=data, aes(x=as.Date(dates2), y=detected.roll), col = cols[5])+
   xlab("")+
-  ylab("Daily average reported cases")+
+  ylab("Reported new cases")+
+  ggtitle("Newfoundland and Labrador")+
+  theme_classic()+
+  ylim(c(0,max(data$cases.raw, data$detected.roll)))+
+  scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+
+gNL3=ggplot() +
+  geom_line(data=tail(data, 14), aes(x=as.Date(dates2), y=cases.raw.hub), col = cols[5], lty=2)+
+  geom_point(data=tail(data, 14), aes(x=as.Date(dates2), y=cases.raw.hub), col = cols[5], pch=2)+
+  geom_point(data=tail(data, 14), aes(x=as.Date(dates2), y=cases.raw), col = cols[5])+
+  geom_line(data=tail(data, 14), aes(x=as.Date(dates2), y=cases.raw), col = cols[5])+
+  xlab("")+
+  ylab("Reported new cases")+
   ggtitle("Newfoundland and Labrador (last 14 days)")+
   theme_classic()+
-  ylim(c(0,300))+
+  ylim(c(0,max(tail(data$cases.raw,14), tail(data$detected.roll, 14))))+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
   theme(axis.text.x = element_text(angle = 90),legend.position = "none")
 
@@ -202,9 +250,9 @@ gE+gC+gW+gL
 
 
 <div class="alert alert-info">
-In February 2022, 13$\%$ of tests reported by the Newfoundland and Labrador provincial PCR testing system have been positive, and on some days positivity has exceeded 20$\%$. _Could this high percentage of positive test results suggest that COVID-19 is increasing undetected in the Newfoundland and Labrador community?_
+In February 2022, 22$\%$ of tests reported by the Newfoundland and Labrador provincial PCR testing system were positive. _Could this high percentage of positive test results suggest that COVID-19 is increasing undetected in the Newfoundland and Labrador community?_
 
-[Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) found that the prevalence of unreported cases during the previous week is approximated as the geometric mean of the per capita reported cases, and the proportion of tests that are positive, where these data are appropriately smoothed. I use this approximation to estimate the number of unreported cases a week ago, and prior. I graph the results to determine if the trend in **reported cases** (increasing, decreasing, or level) is consistent with the trend in **total cases (both reported and unreported)**.
+[Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) found that the prevalence of unreported cases during the previous week is approximated as the geometric mean of the per capita reported new cases, and the proportion of tests that are positive, where these data are appropriately smoothed. I use this approximation to estimate the number of unreported active cases a week ago, and prior. I graph the results to determine if the trend in **reported new cases** (increasing, decreasing, or level) is consistent with the trend in **total active cases** (both reported and unreported).
 </div>
 
 ```{r,echo=F}
@@ -212,17 +260,23 @@ gNL
 ```
 
 
-**Figure 1.** Each of % positivity, total cases (reported and unreported), and reported cases are plotted relative to their maximum values, so that _trends_ can be compared. Recently, the percentage of tests that are positive, as reported by the provincial testing system, has been near its maximum value (grey dots; 14-day average). In contrast, reported cases have been declining or level since early January (blue dots; 14-day average as a % of the maximum value). Even with % positivity having recently been close to its maximum value, total COVID-19 cases (both reported and unreported) are relatively level (blue solid line; as a percentage of the maximum value). Reported cases and test positivity are used to calculate undetected cases 7 days ago, so total cases (blue solid line) can only be estimated up until 7 days before the last reported data. All data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID).   
+**Figure 1.** Each of % positivity, total active cases (reported and unreported), and reported new cases are plotted relative to their maximum values, so that _trends_ can be compared. Recently, the percentage of tests that are positive, as reported by the provincial testing system, has been near its maximum value (grey dots; 14-day average). In contrast, reported new cases peaked in mid-January, reached a low in mid-February, and are currently increasing (blue dots; 14-day average as a % of the maximum value). While positivity values have been high, trends in total active cases and reported new cases (i.e., increasing, decreasing, or level) have been similar. Reported cases and test positivity are used to calculate undetected cases 7 days ago, so total active cases (blue solid line) can only be estimated up until 7 days before the last reported data. Data are from the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/).   
 
-```{r,echo=F}
+```{r,echo=F, warning=FALSE}
 gE+gC+gW+gL
 ```
 
-**Figure 2.** Results are similar at the Regional Health Authority level. There have been some times when total COVID-19 cases (both reported and unreported, solid lines) have increased for some Regional Health Authorities when reported cases (coloured dots) have not, but overall trends in reported and total (both reported and unreported; solid line) cases are similar. Methods and figure legend are as for Figure 1.
+**Figure 2.** Methods and figure legend are as for Figure 1. Data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (note that the public advisories do not report test numbers for each regional health authority).
 
 
-```{r,echo=F}
+```{r,echo=F, warning=FALSE}
 gNL2
 ```
 
-**Figure 3.** Reported cases used for this analysis (last 14 days only). To account for days when cases and tests are not reported, the daily average is taken. The data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID). 
+**Figure 3.** Reported new cases used for this analysis: [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (solid line and dots) [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (dashed line and open dots). The update of this report on March 2 contained an error as "new cases" in the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) was understood to be since last reporting, when if interpretted as "on the reporting day" then both data sources agree recently. There is some disagreement between the data sources in January, however, at this time out-of-province test results were reported. In the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data, these cases were assigned to the day they were reported.  
+
+```{r,echo=F}
+gNL3
+```
+
+**Figure 4.** Reported new cases used for this analysis (last 14 days only). Both the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) and [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data are shown, but the data are identical.
