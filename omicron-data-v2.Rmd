@@ -32,6 +32,8 @@ eastern = data2[data2$RHA=="eastern_rha",]
 western = data2[data2$RHA=="western_rha",]
 central = data2[data2$RHA=="central_rha",]
 labrador = data2[data2$RHA=="labradorgrenfell_rha",]
+#error not cumulative
+labrador$tests[51] = labrador$tests[51]+labrador$tests[50]
 
 row.names(eastern) <- NULL
 row.names(central)<-NULL
@@ -83,7 +85,7 @@ cases.raw = values$cases
 test.raw = values$tests
 active = rollsumr(values.roll$cases, k = 7, fill = NA)
 active[1:6] = cumsum(values.roll$cases[1:6])
-data = data.frame(dates2 = tail(dates,-1), tests.roll = c(rep(NA,13),values.roll$tests), detected.roll = c(rep(NA,13),values.roll$cases), all = c(rep(NA,7),undetected+active, rep(NA,6)), cases.raw = cases.raw, test.raw = test.raw, positivity.roll = c(rep(NA,13),values.roll$positivity))
+data = data.frame(dates2 = tail(dates,-1), tests.roll = c(rep(NA,13),values.roll$tests), detected.roll = c(rep(NA,13),values.roll$cases), all = c(rep(NA,7),undetected+active, rep(NA,6)), cases.raw = cases.raw, test.raw = test.raw, positivity.roll = c(rep(NA,13),values.roll$positivity), positivity.raw = cases.raw/test.raw)
 return(data)
 }
 
@@ -170,6 +172,7 @@ all.hub = eastern$all + western$all + central$all + labrador$all
 positivity.roll.hub = c(rep(NA,13),rollmean(cases.raw.hub/test.raw.hub, 14))
 detected.roll.hub = c(rep(NA,13),rollmean(cases.raw.hub, 14))
 
+
 # Load data from PSAs
 NL <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL.csv', fill=TRUE)
 NL.tests <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/Test_NL(twosources).csv', fill=TRUE)
@@ -199,7 +202,7 @@ popn.size <- 10000*(data1[data1$regional_health_authority=="labradorgrenfell_rha
 data = smoothdata()
 NL = data
 
-data = cbind(data, detected.roll.hub = detected.roll.hub, all.hub = all.hub, positivity.roll.hub = positivity.roll.hub, cases.raw.hub=cases.raw.hub)
+data = cbind(data, detected.roll.hub = detected.roll.hub, all.hub = all.hub, positivity.roll.hub = positivity.roll.hub, cases.raw.hub=cases.raw.hub, test.raw.hub = test.raw.hub)
 
 
 gNL=ggplot() +
@@ -219,12 +222,25 @@ gNL=ggplot() +
   theme(axis.text.x = element_text(angle = 90),legend.position = "none")
 
 gNL2=ggplot() +
-  geom_line(data=data, aes(x=as.Date(dates2), y=detected.roll.hub), col = cols[5], lty=2)+
-  geom_point(data=data, aes(x=as.Date(dates2), y=cases.raw.hub), col = cols[5], pch=2)+
-  geom_point(data=data, aes(x=as.Date(dates2), y=cases.raw), col = cols[5])+
-  geom_line(data=data, aes(x=as.Date(dates2), y=detected.roll), col = cols[5])+
+  geom_line(data=data, aes(x=as.Date(dates2), y=data$detected.roll.hub), col = cols[5], lty=2)+
+  geom_point(data=data, aes(x=as.Date(dates2), y=data$cases.raw.hub), col = cols[5], pch=2)+
+  geom_point(data=data, aes(x=as.Date(dates2), y=data$cases.raw), col = cols[5])+
+  geom_line(data=data, aes(x=as.Date(dates2), y=data$detected.roll), col = cols[5])+
   xlab("")+
   ylab("Reported new cases")+
+  ggtitle("Newfoundland and Labrador")+
+  theme_classic()+
+  ylim(c(0,max(data$cases.raw, data$detected.roll)))+
+  scale_x_date(date_breaks = "7 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+
+gNL2b=ggplot() +
+  geom_line(data=data, aes(x=as.Date(dates2), y=100*data$positivity.roll.hub), col = cols[5], lty=2)+
+  geom_point(data=data, aes(x=as.Date(dates2), y=100*cases.raw.hub/test.raw.hub), col = cols[5], pch=2)+
+  geom_point(data=data, aes(x=as.Date(dates2), y=100*cases.raw/test.raw), col = cols[5])+
+  geom_line(data=data, aes(x=as.Date(dates2), y=100*data$positivity.roll), col = cols[5])+
+  xlab("")+
+  ylab("Positivity (%)")+
   ggtitle("Newfoundland and Labrador")+
   theme_classic()+
   ylim(c(0,max(data$cases.raw, data$detected.roll)))+
@@ -242,10 +258,20 @@ gNL3=ggplot() +
   theme_classic()+
   ylim(c(0,max(tail(data$cases.raw,14), tail(data$detected.roll, 14))))+
   scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
-  theme(axis.text.x = element_text(angle = 90),legend.position = "none")
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none", plot.title = element_text(size=10))
 
-gNL
-gE+gC+gW+gL
+gNL3b=ggplot() +
+  geom_line(data=tail(data,14), aes(x=as.Date(dates2), y=test.raw.hub), col = cols[5], lty=2)+
+  geom_point(data=tail(data,14), aes(x=as.Date(dates2), y=test.raw.hub), col = cols[5], pch=2)+
+  geom_point(data=tail(data,14), aes(x=as.Date(dates2), y=test.raw), col = cols[5])+
+  geom_line(data=tail(data,14), aes(x=as.Date(dates2), y=test.raw), col = cols[5])+
+  xlab("")+
+  ylab("Reported tests")+
+  ggtitle("Newfoundland and Labrador (last 14 days)")+
+  theme_classic()+
+  ylim(c(0,max(data$cases.raw, data$detected.roll)))+
+  scale_x_date(date_breaks = "1 day", date_labels = "%d %b")+
+  theme(axis.text.x = element_text(angle = 90),legend.position = "none", plot.title = element_text(size=10))
 ```
 
 
@@ -270,13 +296,13 @@ gE+gC+gW+gL
 
 
 ```{r,echo=F, warning=FALSE}
-gNL2
+gNL2+gNL2b
 ```
 
-**Figure 3. Reported new cases used for this analysis: [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (dots: raw data and solid line: 14-day average) and [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (open triangles: raw data and dashed line: 14-day average).** The update of this report on March 2 contained an error as "new cases" in the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) was understood to be since last reporting; if understood as "on the reporting day" then both data sources agree recently. There is some disagreement between the data sources in January, when hundreds of test results completed out-of-province were reported. In the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data (manually curated), these cases were assigned to the day they were reported.  
+**Figure 3. Reported new cases (left) and percent positivity (right) used for this analysis: [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (dots: raw data and solid line: 14-day average) and [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (open triangles: raw data and dashed line: 14-day average).** The update of this report on March 2 contained an error as "new cases" in the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) was understood to be since last reporting; if understood as "on the reporting day" then both data sources agree recently. There is some disagreement between the data sources in January, when hundreds of test results completed out-of-province were reported. In the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data (manually curated), these cases were assigned to the day they were reported.  
 
 ```{r,echo=F}
-gNL3
+gNL3+gNL3b
 ```
 
-**Figure 4. Reported new cases used for this analysis (last 14 days only).** Both the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (solid line and dots) and [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (dashed line and open triangles)  data are shown, but the data are identical.
+**Figure 4. Reported new cases (left) and tests (right) used for this analysis (last 14 days only).** Both the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (solid line and dots) and [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (dashed line and open triangles)  data are shown in both panels, but the data are similar.
