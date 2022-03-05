@@ -45,7 +45,7 @@ eastern$tests[31] = eastern$tests[31]+eastern$tests[30]
 # repeated days or non-sensical test numbers
 eastern = eastern[-c(44,28,35),]
 western = western[-43,]
-central = central[-c(44,28),]
+central = central[-c(44,28,52),]
 # Number of tests not reported on entry 38
 labrador = labrador[-c(44,28,38),]
 
