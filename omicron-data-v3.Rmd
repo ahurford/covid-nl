@@ -351,7 +351,7 @@ last7 = data.frame(date = tail(data$dates2,7), data.hub.cases = tail(data$cases.
 
 ### What data am I using?
 
-Below is tha print out of the last 7 days of data. These should match with the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) and the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/).
+Below is the print out of the last 7 days of data. These should match with the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) and the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/).
 
 ```{r,echo=F}
 last7
