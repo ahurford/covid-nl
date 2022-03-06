@@ -326,7 +326,7 @@ gNL.active
 **Figure 2. Reported (symbols) and total active cases (line) as a percentage of the population of Newfoundland and Labrador.** The number of unreported cases is estimated as described [here](#Methods). Colours denote two different data sources (see Figure 1 caption).
 
 
-### How many cases are not reported?
+### How many cases are unreported?
 
 I estimate that on `r format(head(tail(round(data$dates2),7),1), "%b %d")` , there were **`r round(head(tail(data$all/data$active,7),1),1)` unreported cases per reported case** (Figure 3).
 
