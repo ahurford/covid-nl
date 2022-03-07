@@ -358,7 +358,7 @@ gE+gC+gW+gL
 
 ### 5. What is $R$?
 ```{r, include=F}
-T<-10
+T<-7
 DT = function(){
 mod = nls(val ~ a*exp(r*seq(1,T)), 
                start = list(a = 100, r = 0.2))
