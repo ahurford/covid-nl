@@ -7,6 +7,8 @@ output:
   pdf_document: default
 fontsize: 11pt
 ---
+<font size="4">
+
 [Memorial University of Newfoundland and Labrador,](https://www.mun.ca/math/)
 [Canadian Network for Modelling Infectious Disease,](https://canmod.net/)
 [Mathematics for Public Health,](http://www.fields.utoronto.ca/activities/public-health)
@@ -26,35 +28,37 @@ cols = gg_color_hue(n)
 #data=read.csv("~/Desktop/RHA_DailyData_Original_Public.csv")
 data <- read.csv('https://raw.githubusercontent.com/ahurford/covid-nl/master/NL-Hub/RHA_DailyData_Original_Public.csv', fill=TRUE)
 data1<-data
-data2 = data.frame(date=as.Date(data$date_updated), cases = data$new_cases, tests = data$total_people_tested, RHA = data$regional_health_authority)
+data2 = data.frame(date=as.Date(data$date_updated), cases = data$total_number_of_cases, tests = data$total_people_tested, RHA = data$regional_health_authority)
 data2 = data2[data2$date>"2021-12-10",]
 eastern = data2[data2$RHA=="eastern_rha",]
 western = data2[data2$RHA=="western_rha",]
 central = data2[data2$RHA=="central_rha",]
 labrador = data2[data2$RHA=="labradorgrenfell_rha",]
-#error not cumulative
-labrador$tests[51] = labrador$tests[51]+labrador$tests[50]
 
 row.names(eastern) <- NULL
 row.names(central)<-NULL
 row.names(western)<-NULL
 row.names(labrador)<-NULL
 
-# correct flaws in data
-eastern$tests[31] = eastern$tests[31]+eastern$tests[30]
-# repeated days or non-sensical test numbers
-eastern = eastern[-c(44,28,35),]
-western = western[-43,]
-central = central[-c(44,28,51),]
-# Number of tests not reported on entry 38
-labrador = labrador[-c(44,28,38),]
+#remove repeated days: Jan 26 and Feb 17
+eastern = eastern[-c(44,28),]
+western = western[-c(44,28),]
+central = central[-c(44,28),]
+labrador = labrador[-c(44,28),]
+# not cumulative
+eastern$tests[30] = eastern$tests[30]+eastern$tests[29]
+labrador$tests[49] = eastern$tests[49]+eastern$tests[48]
+# no tests reported or very high number
+labrador = labrador[-c(37,49),]
+#cumulative number goes down
+central = central[-49,]
 
 smoothdata = function(){
 T = length(values[,1])
 difference <- c(1,as.double(difftime(values$date[2:T],values$date[1:(T-1)],units='days')))
 # Cases per day since last reporting
 values$tests = diff(c(0,values$tests))/difference
-values$cases = values$cases
+values$cases = diff(c(0,values$cases))/difference
 values = cbind(values,difference=difference,positivity=values$cases/values$tests)
 dates = seq(as.Date("2021-12-14"), values$date[T], by="days")
 
@@ -189,7 +193,7 @@ for(i in seq(1,(T))){
   cases = c(cases,rep(NL$total[(i)],difference[(i)]))
 }
 dates = seq(as.Date("2021-12-13"), as.Date(NL$date[T]), by="days")
-NL = data.frame(date=dates, cases=cases, tests=tests)
+NL = data.frame(date=dates, cases=cumsum(cases), tests=tests)
 values <- NL
 popn.size <- 10000*(data1[data1$regional_health_authority=="labradorgrenfell_rha",]$Population[1]+data1[data1$regional_health_authority=="central_rha",]$Population[1]+data1[data1$regional_health_authority=="western_rha",]$Population[1]+data1[data1$regional_health_authority=="eastern_rha",]$Population[1])
 data = smoothdata()
@@ -303,53 +307,116 @@ gNL3b=ggplot() +
   theme(axis.text.x = element_text(angle = 90),legend.position = "none", plot.title = element_text(size=10))
 ```
 
+
 ## {}
 
-### Are cases increasing?
+### 1. Are cases increasing?
 
-**Yes.** That cases are increasing was stated by Dr. Fitzgerald in briefings on February 23 and March 1. Reported new cases have been increasing, as has the percentage of positive test results (Figure 1).
+**Yes.** That cases are increasing was stated by Dr. Fitzgerald in briefings on February 23 and March 1. Reported new cases have been increasing, as has the percentage of results that are positive (Figure 1).
 
 ```{r,echo=F, warning=FALSE}
 gNL2+gNL2b
 ```
 
-**Figure 1. Reported new cases (left) and percent positivity (right) from two public data sources**. The data sources are the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (<u>blue</u> - dots: raw data; line: 14-day average) and the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (<u>aqua</u> - astericks: raw data; line: 14-day average). There is some disagreement between the data sources in January, when hundreds of test results completed out-of-province were reported. For the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data (manually curated) these cases were assigned to the day they were reported.  
+**Figure 1. Reported new cases (left) and percent positivity (right) from two public data sources**. The data sources are the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (<u>blue</u> - dots: raw data; line: 14-day average) and the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (<u>aqua</u> - astericks: raw data; line: 14-day average). In mid-January, hundreds of test results completed out-of-province were reported. For the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data (manually curated) these cases were assigned to the day they were reported.  
 
-### How should I understand my risk for becoming infected?
+\
 
-The risk of becoming infected depends on your vaccination status and other factors. An additional consideration is the total number of active infections (both reported and unreported; Figure 2 solid line). Currently, the total number of active infections is **increasing.** 
+### 2. How should I understand my risk for becoming infected?
+
+The risk of becoming infected depends on your vaccination status and other factors. An additional consideration is the total number of active cases (both reported and unreported; Figure 2 solid line). Currently, the total number of active cases is **increasing.** 
 
 ```{r,echo=F, warning=FALSE}
 gNL.active
 ```
 
-**Figure 2. Reported (symbols) and total active cases (line) as a percentage of the population of Newfoundland and Labrador.** The number of unreported cases is estimated as described [here](#Methods). Colours denote two different data sources (see Figure 1 caption).
+**Figure 2. Reported (symbols) and total (line) active cases as a percentage of the population of Newfoundland and Labrador.** The number of unreported cases is estimated using the geometric mean method (see [Methods](#Methods)). This method considers both the number of new cases, and the percentage of results that are positive. Reported active cases are calculated by assuming that reported new cases are active for the next 7 days. Colours denote two different data sources (as described in the Figure 1 caption).
 
+\
 
-### How many cases are unreported?
+### 3. How many cases are unreported?
 
-I estimate that on `r format(head(tail(round(data$dates2),7),1), "%b %d")` , there were **`r round(head(tail(data$all/data$active,7),1),1)` unreported cases per reported case** (Figure 3).
+On `r format(head(tail(round(data$dates2),7),1), "%b %d")`, I estimate there were **`r round(mean(c(head(tail(data$all/data$active,7),1), head(tail(data$all.hub/data$active.hub,7),1))),1)` unreported cases per reported case** (Figure 3).
 
 ```{r,echo=F, warning=FALSE}
 g.ratio
 ```
 
-**Figure 3. The number of unreported cases per reported case.** The geometric mean method (coloured lines; described [here](#Methods)) is compared to other estimates: _K-12 RAT survey_ refers to rapid antigen testing of K-12 students performed on January 22 and 25 (see [here](https://www.mun.ca/science/school-test/)); _CITF pre-Omicron_ is an estimate from the [COVID Immunity Taskforce](https://www.covid19immunitytaskforce.ca/seroprevalence-modelling/) for Atlantic Canada prior to the establishment of the Omicron variant; _Hospital admissions (low) and (high)_ are values given by Dr. Fitzgerald during media briefings from testing of all hospital admissions. Colours denote two different data sources (see Figure 1 caption).
+**Figure 3. The number of unreported cases per reported case.** The geometric mean method (coloured lines; described in the [Methods](#Methods)) is compared to other estimates: <u>K-12 RAT survey</u> is rapid antigen testing of K-12 students performed on January 22 and 25 (see [Hurford (2022)](https://www.mun.ca/science/school-test/)); <u>CITF pre-Omicron</u> is an estimate from the [COVID Immunity Taskforce](https://www.covid19immunitytaskforce.ca/seroprevalence-modelling/) for Atlantic Canada prior to the establishment of the Omicron variant; <u>Hospital admissions (low) and (high)</u> are values given by Dr. Fitzgerald during media briefings from testing of all hospital admissions. Colours denote two different data sources (see Figure 1 caption).
 
-### Are there differences between Regional Health Authorities?
+\
+
+### 4. Are there differences between Regional Health Authorities?
 
 ```{r,echo=F, warning=FALSE}
 gE+gC+gW+gL
 ```
 
-**Figure 4. Reported (symbols) and total active cases (line) as a percentage of the population of each Regional Health Authority.** Data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) as the public advisories do not report test numbers for each Regional Health Authority. See Figure 2 caption for additional details.
+**Figure 4. Reported (symbols) and total (line) active cases as a percentage of the population of each Regional Health Authority.** Data are from the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) as the public advisories do not report test numbers for each Regional Health Authority. See Figure 2 caption for additional details.
 
+\
+
+### 5. What is $R$?
+```{r, include=F}
+T<-10
+DT = function(){
+mod = nls(val ~ a*exp(r*seq(1,T)), 
+               start = list(a = 100, r = 0.2))
+# The code below was slow, so I commented it out.
+#CI = confint(mod, level=0.95)
+#CI.lower = max(CI[2,1],0)
+#CI.upper = CI[2,2]
+lambda = unname(coef(mod)[2])
+DT = c(round(log(2)/lambda,2))
+p1=summary(mod)$coefficients[,4]
+p = unname(p1[2])
+return(c(DT,lambda))
+}
+HT = function(){
+mod = nls(val ~ a*exp(-r*seq(1,T)), 
+               start = list(a = 300, r = 0.2))
+## The code below was slow so I commented it out
+#CI = confint(mod, level=0.95)
+#CI.lower = max(CI[2,1],0)
+#CI.upper = CI[2,2]
+lambda = unname(coef(mod)[2])
+DT = c(-round(log(.5)/lambda,2), NA, NA)
+p1=summary(mod)$coefficients[,4]
+p = unname(p1[2])
+return(c(DT))
+}
+val <-tail(data$cases.raw.hub,T)
+dt = DT()
+dtime = dt[1]
+r = dt[2]
+Gbar = 2.2
+Gbar.sd = 1.1
+k = Gbar.sd^2/Gbar^2
+R = (1+Gbar*r*k)^(1/k)
+```
+
+For Newfoundland and Labrador, I estimate $R$ = **`r round(R,2)` secondary infections per infected person** when considering data from the last `r T` days. The doubling time is `r round(dtime,0)` days. For methodological details see [Methods](#Methods).
 
 ```{r, include=F}
 last7 = data.frame(date = tail(data$dates2,7), data.hub.cases = tail(data$cases.raw.hub,7), PSA.cases = tail(data$cases.raw,7), data.hub.tests = tail(data$test.raw.hub,7), PSA.tests = tail(data$test.raw,7))
 ```
 
-### What data am I using?
+\
+
+### 6. What does the high percentage of positive tests mean?
+High positivity occurs due to: (a)  high infection prevalence; and/or (b) a testing bias towards identifying positive cases. In Newfoundland and Labrador, both factors likely have a role.
+
+In Newfoundland and Labrador, [asymptomatic contacts of cases](https://www.gov.nl.ca/covid-19/files/Covid-Exposure-Flowchart-2021-FINAL.pdf) should schedule a PCR test, and these individuals may frequently test positive. Rapid antigen tests become widely available in late January and this may have affected demand for PCR tests for individuals with COVID-like symptoms, who are not infected with COVID-19. 
+
+\
+
+### 7. Does the increase in reported cases suggest that BA.2 is spreading?
+
+The increase in reported cases can be explained by re-opening. These analyses cannot determine if the BA.2 variant is spreading.
+
+\
+
+### 8. What data are used for this analysis?
 
 Below is the print out of the last 7 days of data. These should match with the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) and the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/).
 
@@ -357,6 +424,11 @@ Below is the print out of the last 7 days of data. These should match with the [
 last7
 ```
 
+\
 
 ### Methods {#Methods}
-I estimate the prevalence of unreported cases 7-days ago as the geometric mean of the per capita reported new cases (14-day rolling average), and the proportion of tests that are positive (14-day rolling average; see [Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) for details).
+<u>Geometric mean method</u> I estimate the prevalence of unreported cases 7 days ago as the geometric mean of the per capita reported new cases (14-day rolling average), and the proportion of tests that are positive (14-day rolling average; see [Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) for details).
+
+<u>Estimating $R$</u> I estimate $R$ using the equation, and Omicron household generation interval estimates (mean and standard derviation), from [Abbott et al. (2022)](https://epiforecasts.io/omicron-sgtf-forecast/generation-time). I estimate $r$ by fitting an exponential function to the number of new cases reported by the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) over the last `r `T` days. 
+
+</font>
