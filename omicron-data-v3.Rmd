@@ -395,7 +395,7 @@ k = Gbar.sd^2/Gbar^2
 R = (1+Gbar*r*k)^(1/k)
 ```
 
-For Newfoundland and Labrador, I estimate $R$ = **`r round(R,2)` secondary infections per infected person** when considering data from the last `r T` days. The doubling time is `r round(dtime,0)` days. For methodological details, see [Methods](#Methods).
+For Newfoundland and Labrador, I estimate $R$ = **`r round(R,1)` secondary infections per infected person** when considering data from the last `r T` days. The doubling time is `r round(dtime,0)` days. For methodological details, see [Methods](#Methods).
 
 ```{r, include=F}
 last7 = data.frame(date = tail(data$dates2,7), data.hub.cases = tail(data$cases.raw.hub,7), PSA.cases = tail(data$cases.raw,7), data.hub.tests = tail(data$test.raw.hub,7), PSA.tests = tail(data$test.raw,7))
