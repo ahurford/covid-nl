@@ -395,7 +395,7 @@ k = Gbar.sd^2/Gbar^2
 R = (1+Gbar*r*k)^(1/k)
 ```
 
-For Newfoundland and Labrador, I estimate $R$ = **`r round(R,2)` secondary infections per infected person** when considering data from the last `r T` days. The doubling time is `r round(dtime,0)` days. For methodological details see [Methods](#Methods).
+For Newfoundland and Labrador, I estimate $R$ = **`r round(R,2)` secondary infections per infected person** when considering data from the last `r T` days. The doubling time is `r round(dtime,0)` days. For methodological details, see [Methods](#Methods).
 
 ```{r, include=F}
 last7 = data.frame(date = tail(data$dates2,7), data.hub.cases = tail(data$cases.raw.hub,7), PSA.cases = tail(data$cases.raw,7), data.hub.tests = tail(data$test.raw.hub,7), PSA.tests = tail(data$test.raw,7))
@@ -406,7 +406,7 @@ last7 = data.frame(date = tail(data$dates2,7), data.hub.cases = tail(data$cases.
 ### 6. What does the high percentage of positive tests mean?
 High positivity occurs due to: (a)  high infection prevalence; and/or (b) a testing bias towards identifying positive cases. In Newfoundland and Labrador, both factors likely have a role.
 
-In Newfoundland and Labrador, [asymptomatic contacts of cases](https://www.gov.nl.ca/covid-19/files/Covid-Exposure-Flowchart-2021-FINAL.pdf) should schedule a PCR test, and these individuals may frequently test positive. Rapid antigen tests become widely available in late January and this may have affected demand for PCR tests for individuals with COVID-like symptoms, who are not infected with COVID-19. 
+In Newfoundland and Labrador, [asymptomatic contacts of cases](https://www.gov.nl.ca/covid-19/files/Covid-Exposure-Flowchart-2021-FINAL.pdf) should schedule a PCR test, and these individuals may frequently test positive. Rapid antigen tests became widely available in late January, which may have affected demand for PCR tests for individuals with COVID-like symptoms, who are not infected with COVID-19. 
 
 \
 
@@ -429,6 +429,6 @@ last7
 ### Methods {#Methods}
 <u>Geometric mean method</u> I estimate the prevalence of unreported cases 7 days ago as the geometric mean of the per capita reported new cases (14-day rolling average), and the proportion of tests that are positive (14-day rolling average; see [Chui and Ndeffo-Mbah (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009374) for details).
 
-<u>Estimating $R$</u> I estimate $R$ using the equation, and Omicron household generation interval estimates (mean and standard derviation), from [Abbott et al. (2022)](https://epiforecasts.io/omicron-sgtf-forecast/generation-time). I estimate $r$ by fitting an exponential function to the number of new cases reported by the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) over the last `r `T` days. 
+<u>Estimating $R$</u> I estimate $R$ using the equation, and Omicron household generation interval estimates (mean and standard derviation), from [Abbott et al. (2022)](https://epiforecasts.io/omicron-sgtf-forecast/generation-time). I estimate $r$ by fitting an exponential function to the number of new cases reported by the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) over the last `r T` days. 
 
 </font>
