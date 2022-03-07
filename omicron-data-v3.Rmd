@@ -318,7 +318,7 @@ gNL3b=ggplot() +
 gNL2+gNL2b
 ```
 
-**Figure 1. Reported new cases (left) and percent positivity (right) from two public data sources**. The data sources are the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (<u>blue</u> - dots: raw data; line: 14-day average) and the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (<u>aqua</u> - astericks: raw data; line: 14-day average). In mid-January, hundreds of test results completed out-of-province were reported. For the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data (manually curated) these cases were assigned to the day they were reported.  
+**Figure 1. Reported new cases (left) and percent positivity (right) from two public data sources**. The data sources are the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) (<u>aqua</u> - dots: raw data; line: 14-day average) and the [Newfoundland and Labrador COVID-19 Pandemic Update Hub](https://geohub-gnl.hub.arcgis.com/search?q=COVID) (<u>blue</u> - astericks: raw data; line: 14-day average). In mid-January, hundreds of test results completed out-of-province were reported. For the [Department of Health and Community Services Public Advisories](https://www.gov.nl.ca/releases/covid-19-news/) data (manually curated) these cases were assigned to the day they were reported.  
 
 \
 
